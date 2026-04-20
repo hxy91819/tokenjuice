@@ -2,7 +2,7 @@ export { getArtifact, isValidArtifactId, listArtifactMetadata, listArtifacts, st
 export { buildAnalysisEntry, discoverCandidates, doctorArtifacts, statsArtifacts } from "./core/analysis.js";
 export { classifyExecution } from "./core/classify.js";
 export { doctorClaudeCodeHook, installClaudeCodeHook, runClaudeCodePostToolUseHook } from "./core/claude-code.js";
-export { normalizeCommandSignature, normalizeExecutionInput, tokenizeCommand } from "./core/command.js";
+export { normalizeCommandSignature, normalizeEffectiveCommandSignature, normalizeExecutionInput, tokenizeCommand } from "./core/command.js";
 export { doctorCodexHook, installCodexHook, runCodexPostToolUseHook, uninstallCodexHook } from "./core/codex.js";
 export { doctorInstalledHooks } from "./core/hook-doctor.js";
 export { doctorPiExtension, installPiExtension } from "./core/pi.js";

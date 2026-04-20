@@ -97,10 +97,14 @@ export type CompiledRule = {
   };
 };
 
+export type CommandMatchSource = "original" | "shell-body" | "effective";
+
 export type ClassificationResult = {
   family: string;
   confidence: number;
   matchedReducer?: string;
+  matchedVia?: CommandMatchSource;
+  matchedCommand?: string;
 };
 
 export type StoredArtifactRef = {
