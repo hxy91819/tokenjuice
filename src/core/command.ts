@@ -31,6 +31,10 @@ function getCommandText(input: Pick<ToolExecutionInput, "argv" | "command">): st
   return getNormalizedArgv(input).join(" ");
 }
 
+function isShellCommandStringOption(token: string): boolean {
+  return /^-[A-Za-z]*c[A-Za-z]*$/u.test(token);
+}
+
 function getNormalizedArgv0(argv: string[]): string | null {
   const first = argv[0];
   if (!first) {
@@ -249,10 +253,12 @@ export function unwrapShellRunner(input: Pick<ToolExecutionInput, "argv" | "comm
   }
 
   for (let index = 1; index < argv.length - 1; index += 1) {
-    if (argv[index] === "-c" || argv[index] === "-lc") {
-      const shellBody = argv[index + 1]?.trim();
-      return shellBody ? shellBody : null;
+    if (!isShellCommandStringOption(argv[index] ?? "")) {
+      continue;
     }
+
+    const shellBody = argv[index + 1]?.trim();
+    return shellBody ? shellBody : null;
   }
 
   return null;
@@ -281,7 +287,7 @@ export function isSetupWrapperSegment(argv: string[]): boolean {
 }
 
 export function resolveEffectiveCommand(input: Pick<ToolExecutionInput, "argv" | "command">): CommandMatchCandidate | null {
-  const command = getCommandText(input);
+  const command = typeof input.command === "string" ? input.command.trim() : "";
   const argv = getNormalizedArgv(input);
 
   if (!command && argv.length === 0) {

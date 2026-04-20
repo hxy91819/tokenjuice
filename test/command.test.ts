@@ -43,6 +43,11 @@ describe("unwrapShellRunner", () => {
   it("extracts a shell body from bash -lc", () => {
     expect(unwrapShellRunner({ command: "bash -lc 'cd apps && swift test'" })).toBe("cd apps && swift test");
   });
+
+  it("extracts a shell body from clustered shell flags containing -c", () => {
+    expect(unwrapShellRunner({ command: "sh -ceu 'cd repo && pnpm test'" })).toBe("cd repo && pnpm test");
+    expect(unwrapShellRunner({ command: "bash -ec 'rg foo src'" })).toBe("rg foo src");
+  });
 });
 
 describe("resolveEffectiveCommand", () => {
@@ -68,6 +73,14 @@ describe("resolveEffectiveCommand", () => {
 
   it("returns null for already-direct commands", () => {
     expect(resolveEffectiveCommand({ command: "pnpm test" })).toBeNull();
+  });
+
+  it("uses structured argv directly for argv-only inputs with spaced env assignments", () => {
+    expect(resolveEffectiveCommand({ argv: ["FOO=a b", "swift", "build"] })).toEqual({
+      command: "swift build",
+      argv: ["swift", "build"],
+      source: "effective",
+    });
   });
 });
 
@@ -141,6 +154,7 @@ describe("isFileContentInspectionCommand", () => {
     { label: "jq", command: "jq '.version' package.json" },
     { label: "yq", command: "yq '.name' pnpm-workspace.yaml" },
     { label: "wrapped cat", command: "cd repo && cat README.md" },
+    { label: "clustered shell wrapper", command: "bash -ec 'cat README.md'" },
   ])("detects $label as file inspection from command text", ({ command }) => {
     expect(isFileContentInspectionCommand({ command })).toBe(true);
   });
