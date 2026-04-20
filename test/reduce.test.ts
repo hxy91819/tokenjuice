@@ -916,6 +916,37 @@ describe("reduceExecution", () => {
     expect(result.inlineText).not.toContain("        ");
   });
 
+  it("formats wrapped gh table output using the matched effective command", async () => {
+    const wrappedTable = [
+      "123  feat: add tokenjuice cloud reducers        vincentkoc:main   OPEN",
+      "122  fix: tighten fixture verification          vincentkoc:main   OPEN",
+    ].join("\n");
+
+    const setupWrapped = await reduceExecution({
+      toolName: "exec",
+      command: "cd repo && gh pr list",
+      combinedText: wrappedTable,
+      exitCode: 0,
+    });
+
+    expect(setupWrapped.classification.matchedReducer).toBe("cloud/gh");
+    expect(setupWrapped.classification.matchedVia).toBe("effective");
+    expect(setupWrapped.inlineText).toContain("#123 feat: add tokenjuice cloud reducers [OPEN] (vincentkoc:main)");
+    expect(setupWrapped.inlineText).not.toContain("        ");
+
+    const shellWrapped = await reduceExecution({
+      toolName: "exec",
+      command: "bash -lc 'gh pr list'",
+      combinedText: wrappedTable,
+      exitCode: 0,
+    });
+
+    expect(shellWrapped.classification.matchedReducer).toBe("cloud/gh");
+    expect(shellWrapped.classification.matchedVia).toBe("shell-body");
+    expect(shellWrapped.inlineText).toContain("#123 feat: add tokenjuice cloud reducers [OPEN] (vincentkoc:main)");
+    expect(shellWrapped.inlineText).not.toContain("        ");
+  });
+
   it("preserves emoji and CJK while stripping ANSI from user-facing output and stats", async () => {
     const visibleText = ["错误🔥", "修复🙂", "完了✅"].join("\n");
     const coloredText = [

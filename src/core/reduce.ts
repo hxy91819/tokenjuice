@@ -1,5 +1,5 @@
 import { loadRules } from "./rules.js";
-import { classifyExecution, findBestRuleMatch } from "./classify.js";
+import { applyCommandMatchCandidate, buildClassificationResult, classifyExecution, findBestRuleMatch } from "./classify.js";
 import { isFileContentInspectionCommand, normalizeExecutionInput } from "./command.js";
 import { clampText, clampTextMiddle, countTextChars, dedupeAdjacent, headTail, normalizeLines, pluralize, stripAnsi, trimEmptyEdges } from "./text.js";
 import { storeArtifact, storeArtifactMetadata } from "./artifacts.js";
@@ -438,7 +438,15 @@ export async function reduceExecutionWithRules(
   const normalizedInput = normalizeExecutionInput(input);
   const rawText = buildRawText(normalizedInput);
   const measuredRawChars = countTextChars(stripAnsi(rawText));
-  const classification = classifyExecution(normalizedInput, rules, opts.classifier);
+  const match = opts.classifier
+    ? undefined
+    : findBestRuleMatch(normalizedInput, rules);
+  const classification = match
+    ? buildClassificationResult(match.rule, match.candidate)
+    : classifyExecution(normalizedInput, rules, opts.classifier);
+  const reducerInput = match
+    ? applyCommandMatchCandidate(normalizedInput, match.candidate)
+    : normalizedInput;
 
   if (opts.raw) {
     const rawRef = opts.store
@@ -519,10 +527,10 @@ export async function reduceExecutionWithRules(
     throw new Error("missing generic fallback rule");
   }
 
-  const { summary, facts } = applyRule(matchedRule, normalizedInput, rawText);
-  const compactText = formatInline(classification, normalizedInput, summary || "(no output)", facts);
+  const { summary, facts } = applyRule(matchedRule, reducerInput, rawText);
+  const compactText = formatInline(classification, reducerInput, summary || "(no output)", facts);
   const maxInlineChars = opts.maxInlineChars ?? 1200;
-  const selectedText = selectInlineText(classification, normalizedInput, rawText, compactText, maxInlineChars);
+  const selectedText = selectInlineText(classification, reducerInput, rawText, compactText, maxInlineChars);
   const clamp = classification.family === "help" || selectedText.includes("\n") ? clampTextMiddle : clampText;
   const provisionalInlineText = clamp(selectedText, maxInlineChars);
   const provisionalReducedChars = countTextChars(provisionalInlineText);
