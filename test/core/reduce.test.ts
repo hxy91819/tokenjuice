@@ -1147,6 +1147,26 @@ describe("reduceExecution", () => {
     expect(result.compaction?.authoritative).toBe(true);
   });
 
+  it("does not claim hashed clipping for large-document summaries when no line was hash-clipped", async () => {
+    const result = await reduceExecution({
+      toolName: "exec",
+      command: "sed -n '1,260p' notes.txt",
+      argv: ["sed", "-n", "1,260p", "notes.txt"],
+      combinedText: [
+        "# Review",
+        "intro",
+        "## Evidence",
+        ...Array.from({ length: 260 }, (_, index) => `paragraph ${index} short words only for summary coverage`),
+      ].join("\n"),
+      exitCode: 0,
+    });
+
+    expect(result.classification.matchedReducer).toBe("generic/large-document-summary");
+    expect(result.compaction?.kinds).toContain("inspection-large-document-summary");
+    expect(result.compaction?.kinds).toContain("head-tail-omission");
+    expect(result.compaction?.kinds).not.toContain("hashed-middle-clip");
+  });
+
   it("keeps search output raw when the rewritten form would be longer but still fits inline", async () => {
     const rawText = [
       "src/hosts/claude-code/index.ts:101:1: recordStats option plumbing",
