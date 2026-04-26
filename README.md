@@ -38,6 +38,7 @@ beta integrations:
 
 | Client | Install | Integration file | Notes |
 | --- | --- | --- | --- |
+| <img width="48px" src="docs/client-droid.png" alt="Droid" /> | [Droid (Factory CLI)](https://docs.factory.ai/cli/configuration/hooks-guide) | `tokenjuice install droid` | `~/.factory/settings.json` | PostToolUse hook |
 | [Aider](https://aider.chat/) | `tokenjuice install aider` | `CONVENTIONS.tokenjuice.md` | convention guidance |
 | [Avante.nvim](https://github.com/yetone/avante.nvim) | `tokenjuice install avante` | `avante.md` | instruction guidance |
 | [Cline](https://docs.cline.bot/features/hooks/hook-reference) | `tokenjuice install cline` | `~/Documents/Cline/Hooks/tokenjuice-post-tool-use` | PostToolUse hook |
@@ -65,8 +66,8 @@ then:
 ```bash
 tokenjuice --help
 tokenjuice --version
-tokenjuice install [aider|avante|codex|claude-code|cline|codebuddy|continue|cursor|gemini-cli|junie|openhands|pi|opencode|vscode-copilot|copilot-cli|zed]
-tokenjuice uninstall [aider|avante|codex|cline|continue|gemini-cli|junie|openhands|opencode|vscode-copilot|copilot-cli|zed]
+tokenjuice install [aider|avante|codex|claude-code|cline|codebuddy|continue|cursor|droid|gemini-cli|junie|openhands|pi|opencode|vscode-copilot|copilot-cli|zed]
+tokenjuice uninstall [aider|avante|codex|cline|continue|droid|gemini-cli|junie|openhands|opencode|vscode-copilot|copilot-cli|zed]
 ```
 
 OpenClaw support is bundled on the OpenClaw side. Do not run
