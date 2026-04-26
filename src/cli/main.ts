@@ -1729,6 +1729,12 @@ async function runDoctor(args: ParsedArgs): Promise<number> {
         process.stdout.write(`- ${advisory}\n`);
       }
     }
+    if (report.missingPaths.length > 0) {
+      process.stdout.write("missing paths:\n");
+      for (const path of report.missingPaths) {
+        process.stdout.write(`- ${path}\n`);
+      }
+    }
     process.stdout.write(`repair: ${report.fixCommand}\n`);
     return report.status === "broken" ? 1 : 0;
   }
