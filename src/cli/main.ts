@@ -53,7 +53,13 @@ import { doctorCodeRabbitConfig, installCodeRabbitConfig, uninstallCodeRabbitCon
 import { doctorCodeBuddyHook, installCodeBuddyHook, runCodeBuddyPreToolUseHook, uninstallCodeBuddyHook } from "../hosts/codebuddy/index.js";
 import { doctorCommandCodeHook, installCommandCodeHook, runCommandCodePostToolUseHook, uninstallCommandCodeHook } from "../hosts/command-code/index.js";
 import { doctorContinueRule, installContinueRule, uninstallContinueRule } from "../hosts/continue/index.js";
-import { doctorCodexHook, installCodexHook, runCodexPostToolUseHook, uninstallCodexHook } from "../hosts/codex/index.js";
+import {
+  doctorCodexHook,
+  installCodexHook,
+  runCodexPostToolUseHook,
+  uninstallCodexHook,
+  writeCodexPostToolUseSkippedOutput,
+} from "../hosts/codex/index.js";
 import { doctorCopilotAgentHook, installCopilotAgentHook, runCopilotAgentPostToolUseHook, uninstallCopilotAgentHook } from "../hosts/copilot-agent/index.js";
 import {
   doctorCopilotCliHook,
@@ -608,6 +614,28 @@ async function readStdin(maxBytes = DEFAULT_MAX_INPUT_BYTES): Promise<string> {
     chunks.push(buffer);
   }
   return Buffer.concat(chunks).toString("utf8");
+}
+
+async function readStdinForCodexHook(maxBytes = DEFAULT_MAX_INPUT_BYTES): Promise<string | undefined> {
+  if (inputStdin.isTTY) {
+    return "";
+  }
+
+  const chunks: Buffer[] = [];
+  let totalBytes = 0;
+  let exceededLimit = false;
+  for await (const chunk of inputStdin) {
+    const buffer = Buffer.from(chunk);
+    totalBytes += buffer.length;
+    if (totalBytes > maxBytes) {
+      exceededLimit = true;
+      continue;
+    }
+    chunks.push(buffer);
+  }
+
+  // Drain stdin before returning so Codex does not see a broken pipe when the hook declines oversized input.
+  return exceededLimit ? undefined : Buffer.concat(chunks).toString("utf8");
 }
 
 async function readTextInput(file: string | undefined, maxBytes = DEFAULT_MAX_INPUT_BYTES): Promise<string> {
@@ -7372,7 +7400,14 @@ async function main(argv = process.argv.slice(2)): Promise<number> {
     case "stats":
       return await runStats(args);
     case "codex-post-tool-use":
-      return await runCodexPostToolUseHook(await readStdin(args.maxInputBytes));
+      {
+        const hookInput = await readStdinForCodexHook(args.maxInputBytes);
+        if (hookInput === undefined) {
+          writeCodexPostToolUseSkippedOutput("the hook input exceeds its configured safety limit");
+          return 0;
+        }
+        return await runCodexPostToolUseHook(hookInput);
+      }
     case "claude-code-pre-tool-use":
       return await runClaudeCodePreToolUseHook(await readStdin(args.maxInputBytes), args.wrapLauncher);
     case "claude-code-post-tool-use":
