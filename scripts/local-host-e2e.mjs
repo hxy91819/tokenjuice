@@ -146,10 +146,35 @@ async function runCodexE2E() {
   assert(additionalContext.includes("tokenjuice wrap --raw -- <command>"), "expected Codex hook output to include raw rerun hint");
   assert(!hook.stdout.includes("\"decision\""), "Codex hook feedback must not emit JSON decision:block output");
 
+  // Exercise the packaged CLI at both fail-open thresholds: compaction itself
+  // is optional above 1 MiB, while stdin must be fully drained above 16 MiB
+  // so Codex never observes a hook process without a normal exit status.
+  const oversizedResponse = await run(process.execPath, [distCliPath, "codex-post-tool-use"], {
+    env: { CODEX_HOME: codexHome },
+    input: postToolUsePayload("bin/rails test", "x".repeat(1024 * 1024 + 1)),
+  });
+  const oversizedOutput = JSON.parse(oversizedResponse.stdout);
+  assert(oversizedResponse.stderr === "", `expected oversized Codex hook stderr to stay empty, got ${oversizedResponse.stderr}`);
+  assert(oversizedOutput.systemMessage?.toLowerCase().includes("original tool output is unchanged"), "expected oversized response to preserve original output");
+  assert(oversizedOutput.hookSpecificOutput?.additionalContext?.includes("1 MiB safety limit"), "expected oversized response skip explanation");
+
+  const overInputLimit = await run(process.execPath, [distCliPath, "codex-post-tool-use"], {
+    env: { CODEX_HOME: codexHome },
+    input: postToolUsePayload("bin/rails test", "x".repeat(16 * 1024 * 1024)),
+  });
+  const overInputLimitOutput = JSON.parse(overInputLimit.stdout);
+  assert(overInputLimit.stderr === "", `expected over-limit Codex hook stderr to stay empty, got ${overInputLimit.stderr}`);
+  assert(overInputLimitOutput.systemMessage?.toLowerCase().includes("original tool output is unchanged"), "expected over-limit input to preserve original output");
+  assert(overInputLimitOutput.hookSpecificOutput?.additionalContext?.includes("input exceeds its configured safety limit"), "expected over-limit input skip explanation");
+
   return {
     version: version.stdout.trim(),
     doctor: report.status,
-    exitCode: hook.code,
+    exitCodes: {
+      compacted: hook.code,
+      oversizedResponse: oversizedResponse.code,
+      overInputLimit: overInputLimit.code,
+    },
   };
 }
 
