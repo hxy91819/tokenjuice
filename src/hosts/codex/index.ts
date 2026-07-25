@@ -45,6 +45,7 @@ type CodexPostToolUsePayload = {
 const GENERIC_FALLBACK_MIN_SAVED_CHARS = 120;
 const GENERIC_FALLBACK_MAX_RATIO = 0.75;
 const HOOK_REWRITE_MIN_SAVED_CHARS = 8;
+const CODEX_HOOK_MAX_COMPACTION_CHARS = 1 * 1024 * 1024;
 const CODEX_HOOK_LAST_LOG = "tokenjuice-hook.last.json";
 const CODEX_HOOK_HISTORY_LOG = "tokenjuice-hook.history.jsonl";
 const CODEX_HOOK_HISTORY_LIMIT = 200;
@@ -53,7 +54,7 @@ const CODEX_HOOK_HISTORY_LOCK_RETRY_MS = 25;
 const CODEX_HOOK_HISTORY_LOCK_RETRIES = 8;
 const LOW_NON_TOKENJUICE_TIMEOUT_SECONDS = 2;
 const RECOMMENDED_NON_TOKENJUICE_TIMEOUT_SECONDS = 6;
-const TOKENJUICE_CODEX_HOOK_TIMEOUT_SECONDS = 10;
+const TOKENJUICE_CODEX_HOOK_TIMEOUT_SECONDS = 30;
 
 export type InstallCodexHookResult = {
   hooksPath: string;
@@ -745,6 +746,21 @@ function buildCodexReplacementOutput(inlineText: string, rawRefId?: string): Rec
   };
 }
 
+function buildCodexCompactionSkippedOutput(reason: string): Record<string, unknown> {
+  return {
+    // Compaction is optional: preserve the host-owned tool result and explain why no summary was added.
+    systemMessage: `Tokenjuice skipped Bash-output compaction: ${reason}. The original tool output is unchanged.`,
+    hookSpecificOutput: {
+      hookEventName: "PostToolUse",
+      additionalContext: `Tokenjuice skipped Bash-output compaction: ${reason}. The original tool output is unchanged.`,
+    },
+  };
+}
+
+export function writeCodexPostToolUseSkippedOutput(reason: string): void {
+  process.stdout.write(`${JSON.stringify(buildCodexCompactionSkippedOutput(reason))}\n`);
+}
+
 function parseExitCodeValue(value: unknown): number | undefined {
   if (typeof value === "number" && Number.isInteger(value)) {
     return value;
@@ -934,19 +950,23 @@ function shouldStoreFromEnv(): boolean {
 }
 
 async function writeHookDebug(record: Record<string, unknown>): Promise<void> {
-  const codexHome = getCodexHome();
-  const debugPath = join(codexHome, CODEX_HOOK_LAST_LOG);
-  const historyPath = join(codexHome, CODEX_HOOK_HISTORY_LOG);
-  const enrichedRecord = {
-    timestamp: new Date().toISOString(),
-    tokenjuiceVersion: packageJson.version,
-    hookCommandPath: process.argv[1],
-    ...record,
-  };
-  await mkdir(dirname(debugPath), { recursive: true });
-  await writeFile(debugPath, `${JSON.stringify(enrichedRecord, null, 2)}\n`, "utf8");
+  try {
+    const codexHome = getCodexHome();
+    const debugPath = join(codexHome, CODEX_HOOK_LAST_LOG);
+    const historyPath = join(codexHome, CODEX_HOOK_HISTORY_LOG);
+    const enrichedRecord = {
+      timestamp: new Date().toISOString(),
+      tokenjuiceVersion: packageJson.version,
+      hookCommandPath: process.argv[1],
+      ...record,
+    };
+    await mkdir(dirname(debugPath), { recursive: true });
+    await writeFile(debugPath, `${JSON.stringify(enrichedRecord, null, 2)}\n`, "utf8");
 
-  await writeHookHistoryEntry(historyPath, JSON.stringify(enrichedRecord));
+    await writeHookHistoryEntry(historyPath, JSON.stringify(enrichedRecord));
+  } catch {
+    // A diagnostic side effect must never turn an otherwise optional hook into a failed tool call.
+  }
 }
 
 function sanitizeHookHistoryLines(text: string): string[] {
@@ -1110,6 +1130,22 @@ export async function runCodexPostToolUseHook(rawText: string): Promise<number> 
   const combinedText = stringifyToolResponse(payload.tool_response);
   if (!combinedText.trim()) {
     await writeHookDebug({ ...debug, skipped: "empty-tool-response" });
+    return 0;
+  }
+
+  const rawChars = countTextChars(stripAnsi(combinedText));
+  if (rawChars > CODEX_HOOK_MAX_COMPACTION_CHARS) {
+    writeCodexPostToolUseSkippedOutput(
+      `the response exceeds the ${CODEX_HOOK_MAX_COMPACTION_CHARS / (1024 * 1024)} MiB safety limit`,
+    );
+    await writeHookDebug({
+      ...debug,
+      rawChars,
+      reducedChars: rawChars,
+      savedChars: 0,
+      ratio: 1,
+      skipped: "response-too-large",
+    });
     return 0;
   }
 
