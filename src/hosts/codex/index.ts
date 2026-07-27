@@ -378,7 +378,17 @@ async function buildCodexHookCommand(options: CodexHookCommandOptions = {}): Pro
   if (!options.local) {
     const installedBinaryPath = await resolveInstalledTokenjuicePath();
     if (installedBinaryPath) {
-      command = `${shellQuote(installedBinaryPath)} codex-post-tool-use`;
+      try {
+        const resolvedBinaryPath = await realpath(installedBinaryPath);
+        if (resolvedBinaryPath.endsWith(".js")) {
+          // Codex may execute hooks from a non-login environment with a different PATH.
+          // Pin the interpreter, but retain the launcher so package-manager upgrades stay atomic.
+          command = `${shellQuote(nodePath)} ${shellQuote(installedBinaryPath)} codex-post-tool-use`;
+        }
+      } catch {
+        // Preserve package-manager wrappers when their final target cannot be inspected.
+      }
+      command ??= `${shellQuote(installedBinaryPath)} codex-post-tool-use`;
     }
   }
 
