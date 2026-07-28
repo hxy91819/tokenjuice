@@ -122,6 +122,11 @@ async function runCodexE2E() {
   });
   const report = JSON.parse(doctor.stdout);
   assert(report.status === "ok", `expected Codex doctor status ok, got ${doctor.stdout}`);
+  const hookEnv = {
+    CODEX_HOME: codexHome,
+    // Keep the authoritative-vs-normalized assertions independent of a developer's shell env.
+    TOKENJUICE_NO_OMISSION: "",
+  };
 
   const payload = postToolUsePayload(
     "git status",
@@ -138,7 +143,7 @@ async function runCodexE2E() {
     ].join("\n"),
   );
   const hook = await run(process.execPath, [distCliPath, "codex-post-tool-use"], {
-    env: { CODEX_HOME: codexHome },
+    env: hookEnv,
     input: payload,
   });
 
@@ -154,14 +159,34 @@ async function runCodexE2E() {
     "expected Codex hook output to include compacted status paths",
   );
   assert(!additionalContext.includes("and have 8 and 642"), "expected Codex hook output to omit noisy branch details");
-  assert(additionalContext.includes("tokenjuice wrap --raw -- <command>"), "expected Codex hook output to include raw rerun hint");
+  assert(
+    !additionalContext.includes("tokenjuice wrap --raw -- <command>"),
+    "expected non-authoritative Codex rewrites to avoid a raw rerun hint",
+  );
   assert(!hook.stdout.includes("\"decision\""), "Codex hook feedback must not emit JSON decision:block output");
+
+  const authoritativeHook = await run(process.execPath, [distCliPath, "codex-post-tool-use"], {
+    env: hookEnv,
+    input: postToolUsePayload(
+      "git log --oneline",
+      Array.from(
+        { length: 40 },
+        (_, index) => `${(index + 1).toString(16).padStart(7, "a")} feat: commit ${index}`,
+      ).join("\n"),
+    ),
+  });
+  const authoritativeOutput = JSON.parse(authoritativeHook.stdout);
+  const authoritativeContext = authoritativeOutput.hookSpecificOutput?.additionalContext;
+  assert(
+    authoritativeContext?.includes("tokenjuice wrap --raw -- <command>"),
+    "expected authoritative Codex omissions to retain a raw recovery hint",
+  );
 
   // Exercise the packaged CLI at both fail-open thresholds: compaction itself
   // is optional above 1 MiB, while stdin must be fully drained above 16 MiB
   // so Codex never observes a hook process without a normal exit status.
   const oversizedResponse = await run(process.execPath, [distCliPath, "codex-post-tool-use"], {
-    env: { CODEX_HOME: codexHome },
+    env: hookEnv,
     input: postToolUsePayload("bin/rails test", "x".repeat(1024 * 1024 + 1)),
   });
   const oversizedOutput = JSON.parse(oversizedResponse.stdout);
@@ -170,7 +195,7 @@ async function runCodexE2E() {
   assert(oversizedOutput.hookSpecificOutput?.additionalContext?.includes("1 MiB safety limit"), "expected oversized response skip explanation");
 
   const overInputLimit = await run(process.execPath, [distCliPath, "codex-post-tool-use"], {
-    env: { CODEX_HOME: codexHome },
+    env: hookEnv,
     input: postToolUsePayload("bin/rails test", "x".repeat(16 * 1024 * 1024)),
   });
   const overInputLimitOutput = JSON.parse(overInputLimit.stdout);

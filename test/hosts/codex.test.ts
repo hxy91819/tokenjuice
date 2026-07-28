@@ -673,6 +673,10 @@ describe("runCodexPostToolUseHook", () => {
     const debug = JSON.parse(await readFile(join(home, "tokenjuice-hook.last.json"), "utf8")) as {
       rewrote: boolean;
       matchedReducer?: string;
+      compaction?: {
+        authoritative?: boolean;
+        kinds?: string[];
+      };
     };
 
     const response = parseCodexReplacementOutput(stdout);
@@ -686,10 +690,81 @@ describe("runCodexPostToolUseHook", () => {
     expect(response.hookSpecificOutput?.additionalContext).toContain("Changes not staged:");
     expect(response.hookSpecificOutput?.additionalContext).toContain("M: src/agents/pi-embedded-runner/run/attempt.prompt-helpers.ts");
     expect(response.hookSpecificOutput?.additionalContext).not.toContain("and have 8 and 642");
-    expect(response.hookSpecificOutput?.additionalContext).toContain("tokenjuice wrap --raw -- <command>");
+    expect(response.hookSpecificOutput?.additionalContext).not.toContain("tokenjuice wrap --raw -- <command>");
     expect(response.hookSpecificOutput?.additionalContext).not.toContain("tokenjuice wrap --full -- <command>");
     expect(debug.rewrote).toBe(true);
     expect(debug.matchedReducer).toBe("git/status");
+    expect(debug.compaction?.authoritative).toBe(false);
+  });
+
+  it("keeps raw recovery implicit for a formatting-only JSON rewrite", async () => {
+    const home = await createTempDir();
+    process.env.CODEX_HOME = home;
+
+    const payload = JSON.stringify({
+      hook_event_name: "PostToolUse",
+      tool_name: "Bash",
+      tool_input: {
+        command: "custom-tool --emit-json",
+      },
+      tool_response: JSON.stringify({
+        status: "ok",
+        files: Array.from({ length: 18 }, (_, index) => ({
+          path: `src/file-${index}.ts`,
+          changed: true,
+        })),
+      }, null, 2),
+    });
+
+    const { code, stdout, stderr } = await captureStdio(() => runCodexPostToolUseHook(payload));
+    const debug = JSON.parse(await readFile(join(home, "tokenjuice-hook.last.json"), "utf8")) as {
+      rewrote: boolean;
+      compaction?: {
+        authoritative?: boolean;
+        kinds?: string[];
+      };
+    };
+    const response = parseCodexReplacementOutput(stdout);
+
+    expect(code).toBe(0);
+    expect(stderr).toBe("");
+    expect(debug.rewrote).toBe(true);
+    expect(debug.compaction?.authoritative).not.toBe(true);
+    expect(response.hookSpecificOutput?.additionalContext).not.toContain("tokenjuice wrap --raw -- <command>");
+    expect(response.hookSpecificOutput?.additionalContext).toContain('"status":"ok"');
+  });
+
+  it("keeps raw recovery available for authoritative omissions", async () => {
+    const home = await createTempDir();
+    process.env.CODEX_HOME = home;
+
+    const payload = JSON.stringify({
+      hook_event_name: "PostToolUse",
+      tool_name: "Bash",
+      tool_input: {
+        command: "git log --oneline",
+      },
+      tool_response: Array.from(
+        { length: 40 },
+        (_, index) => `${(index + 1).toString(16).padStart(7, "a")} feat: commit ${index}`,
+      ).join("\n"),
+    });
+
+    const { code, stdout, stderr } = await captureStdio(() => runCodexPostToolUseHook(payload));
+    const debug = JSON.parse(await readFile(join(home, "tokenjuice-hook.last.json"), "utf8")) as {
+      rewrote: boolean;
+      compaction?: {
+        authoritative?: boolean;
+        kinds?: string[];
+      };
+    };
+    const response = parseCodexReplacementOutput(stdout);
+
+    expect(code).toBe(0);
+    expect(stderr).toBe("");
+    expect(debug.rewrote).toBe(true);
+    expect(debug.compaction?.authoritative).toBe(true);
+    expect(response.hookSpecificOutput?.additionalContext).toContain("tokenjuice wrap --raw -- <command>");
   });
 
   it("skips rewriting generic fallback output for compound shell diagnostics", async () => {
@@ -774,6 +849,10 @@ describe("runCodexPostToolUseHook", () => {
       rewrote: boolean;
       skipped?: string;
       matchedReducer?: string;
+      compaction?: {
+        authoritative?: boolean;
+        kinds?: string[];
+      };
       rawChars?: number;
       reducedChars?: number;
       savedChars?: number;
@@ -826,10 +905,12 @@ describe("runCodexPostToolUseHook", () => {
     expect(debug.rewrote).toBe(true);
     expect(debug.skipped).toBeUndefined();
     expect(debug.matchedReducer).toBe("filesystem/find");
+    expect(debug.compaction?.authoritative).toBe(true);
     expect(debug.rawChars).toBeGreaterThan(0);
     expect(debug.reducedChars).toBeLessThan(debug.rawChars!);
     expect(debug.savedChars).toBeGreaterThan(0);
     expect(debug.ratio).toBeLessThan(1);
+    expect(response.hookSpecificOutput?.additionalContext).toContain("tokenjuice wrap --raw -- <command>");
   });
 
   it("skips auto-rewrite for file-content inspection commands", async () => {

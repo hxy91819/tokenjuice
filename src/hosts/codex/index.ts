@@ -6,6 +6,7 @@ import packageJson from "../../../package.json" with { type: "json" };
 
 import { stripLeadingCdPrefix } from "../../core/command.js";
 import { storeArtifactMetadata } from "../../core/artifacts.js";
+import type { CompactionMetadata } from "../../core/compaction-metadata.js";
 import { compactBashResult, getOutputAwareInspectionSkipReason } from "../../core/integrations/compact-bash-result.js";
 import { classifyOnly } from "../../core/reduce.js";
 import { countTextChars, stripAnsi } from "../../core/text.js";
@@ -732,14 +733,29 @@ function commandRequestsTokenjuiceRawBypass(command: string): boolean {
   return optionArgs.includes("--raw") || optionArgs.includes("--full");
 }
 
-function buildCodexFeedback(inlineText: string, rawRefId?: string): string {
+function buildCodexFeedback(
+  inlineText: string,
+  rawRefId?: string,
+  compaction?: CompactionMetadata,
+): string {
+  if (compaction?.authoritative !== true) {
+    // A rewrite without an authoritative omission marker is already usable as-is. Advertising a
+    // raw rerun for every normalized result trains the agent to discard compacted context even
+    // when the reducer did not flag recoverable detail.
+    return inlineText;
+  }
+
   return `${inlineText}\n\n${buildCompactionHint(rawRefId)}`;
 }
 
 const CODEX_COMPACTION_STOP_REASON = "Tokenjuice replaced the original Bash output with the compacted context above.";
 
-function buildCodexReplacementOutput(inlineText: string, rawRefId?: string): Record<string, unknown> {
-  const feedback = buildCodexFeedback(inlineText, rawRefId);
+function buildCodexReplacementOutput(
+  inlineText: string,
+  rawRefId?: string,
+  compaction?: CompactionMetadata,
+): Record<string, unknown> {
+  const feedback = buildCodexFeedback(inlineText, rawRefId, compaction);
   return {
     // Codex uses separate fields for the hook event and model feedback. Set both so replacement
     // does not look like a failed tool call, while keeping the full summary in additionalContext.
@@ -1222,6 +1238,7 @@ export async function runCodexPostToolUseHook(rawText: string): Promise<number> 
       debug.savedChars = savedChars;
       debug.ratio = result.stats.ratio;
       debug.matchedReducer = result.classification.matchedReducer;
+      debug.compaction = result.compaction;
     }
 
     if (outcome.action === "keep") {
@@ -1229,7 +1246,11 @@ export async function runCodexPostToolUseHook(rawText: string): Promise<number> 
       return 0;
     }
 
-    process.stdout.write(`${JSON.stringify(buildCodexReplacementOutput(outcome.result.inlineText, outcome.result.rawRef?.id))}\n`);
+    process.stdout.write(`${JSON.stringify(buildCodexReplacementOutput(
+      outcome.result.inlineText,
+      outcome.result.rawRef?.id,
+      outcome.result.compaction,
+    ))}\n`);
     await writeHookDebug({ ...debug, rewrote: true });
     return 0;
   } catch (error) {
