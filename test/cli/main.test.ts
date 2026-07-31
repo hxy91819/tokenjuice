@@ -25,6 +25,7 @@ describe("parseArgs", () => {
   it("parses --no-omit for reduce and wrap", () => {
     expect(parseArgs(["reduce", "--no-omit"]).noOmit).toBe(true);
     expect(parseArgs(["wrap", "--no-omit", "--", "echo", "hi"]).noOmit).toBe(true);
+    expect(parseArgs(["codex-post-tool-use", "--no-omit"]).noOmit).toBe(true);
   });
 });
 
