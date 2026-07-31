@@ -1327,7 +1327,10 @@ async function runInstall(args: ParsedArgs): Promise<number> {
   }
 
   if (target === "codex") {
-    const result = await installCodexHook(undefined, { local: args.local });
+    const result = await installCodexHook(undefined, {
+      local: args.local,
+      ...(args.noOmit ? { noOmit: true } : {}),
+    });
     if (args.format === "json") {
       process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
       return 0;
@@ -5099,7 +5102,10 @@ async function runDoctor(args: ParsedArgs): Promise<number> {
   }
 
   if (args.positionals[0] === "codex") {
-    const report = await doctorCodexHook(undefined, { local: args.local });
+    const report = await doctorCodexHook(undefined, {
+      local: args.local,
+      ...(args.noOmit ? { noOmit: true } : {}),
+    });
 
     if (args.format === "json") {
       process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
@@ -7434,7 +7440,7 @@ async function main(argv = process.argv.slice(2)): Promise<number> {
           writeCodexPostToolUseSkippedOutput("the hook input exceeds its configured safety limit");
           return 0;
         }
-        return await runCodexPostToolUseHook(hookInput);
+        return await runCodexPostToolUseHook(hookInput, { noOmit: args.noOmit });
       }
     case "claude-code-pre-tool-use":
       return await runClaudeCodePreToolUseHook(await readStdin(args.maxInputBytes), args.wrapLauncher);

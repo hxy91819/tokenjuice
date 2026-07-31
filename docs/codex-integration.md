@@ -33,14 +33,25 @@ Use `tokenjuice wrap --raw -- <command>` when the full command output is
 required. This escape hatch reruns the command; review side effects before using
 it with commands that mutate files or external systems.
 
+## No-omit mode
+
+Codex starts `PostToolUse` hooks from its own process, which may not inherit
+environment variables loaded by the Bash tool's login shell. When
+`TOKENJUICE_NO_OMISSION=1` is set, rerun `tokenjuice install codex`; the
+installer snapshots the policy into the hook command as
+`codex-post-tool-use --no-omit`.
+
+Run `tokenjuice doctor codex` after changing the policy. It reports a command
+mismatch when an existing hook needs to be reinstalled.
+
 ## Local verification
 
 To point the real Codex home at the current checkout:
 
 ```bash
 pnpm build
-node dist/cli/main.js install codex --local
-node dist/cli/main.js doctor codex --local
+node dist/cli/main.js install codex --local --no-omit
+node dist/cli/main.js doctor codex --local --no-omit
 ```
 
 `doctor` should report `status: ok`. Use it first when the hook is disabled,
