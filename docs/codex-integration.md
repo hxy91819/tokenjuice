@@ -35,6 +35,9 @@ Use `tokenjuice wrap --raw -- <command>` when the full command output is
 required. This escape hatch reruns the command; review side effects before using
 it with commands that mutate files or external systems.
 
+For the deferred authenticated validation across local Codex profiles, follow
+[the real-environment acceptance TODO](todo-codex-profile-real-environment-acceptance.md).
+
 ## No-omit mode
 
 Codex starts `PostToolUse` hooks from its own process, which may not inherit
