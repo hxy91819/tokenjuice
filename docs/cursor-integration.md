@@ -83,6 +83,11 @@ expected:
 - `--raw` keeps `ratio = 1`
 - non-raw wraps usually produce `ratio < 1`
 
+`TOKENJUICE_NO_OMISSION=1` prevents reducers from dropping entries, but it can
+still produce a lossless normalized representation. Cursor may independently
+fold the displayed command output behind a “lines hidden” control; that UI
+folding does not indicate Tokenjuice omitted those lines.
+
 ## platform boundary
 
 - supported: linux/macos, and cursor inside wsl
