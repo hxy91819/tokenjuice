@@ -207,6 +207,31 @@ describe("installCodexHook", () => {
     );
   });
 
+  it("captures an explicit omission override when the environment enables no-omit", async () => {
+    const home = await createTempDir();
+    const hooksPath = join(home, "hooks.json");
+    const binDir = join(home, "bin");
+    const launcherPath = join(binDir, "tokenjuice");
+
+    process.env.PATH = binDir;
+    process.env.TOKENJUICE_NO_OMISSION = "1";
+    await mkdir(binDir, { recursive: true });
+    await writeFile(launcherPath, "#!/usr/bin/env bash\nexit 0\n", { encoding: "utf8", mode: 0o755 });
+
+    const result = await installCodexHook(hooksPath, { allowOmit: true });
+
+    expect(result.command).toBe(`${launcherPath} codex-post-tool-use --allow-omit`);
+  });
+
+  it("rejects conflicting omission policies through the public installer API", async () => {
+    const home = await createTempDir();
+
+    await expect(installCodexHook(join(home, "hooks.json"), {
+      noOmit: true,
+      allowOmit: true,
+    })).rejects.toThrow("noOmit and allowOmit policies cannot be enabled together");
+  });
+
   it("pins the current Node runtime when the installed launcher resolves to JavaScript", async () => {
     const home = await createTempDir();
     const hooksPath = join(home, "hooks.json");
@@ -374,6 +399,27 @@ describe("doctorCodexHook", () => {
     expect(report.issues).toContain(
       "configured Codex hook command does not match the current recommended command",
     );
+  });
+
+  it("accepts an explicit omission override when the environment enables no-omit", async () => {
+    const home = await createTempDir();
+    const hooksPath = join(home, "hooks.json");
+    const binDir = join(home, "bin");
+    const launcherPath = join(binDir, "tokenjuice");
+    const featureFlagConfigPath = join(home, "config.toml");
+
+    process.env.PATH = binDir;
+    process.env.TOKENJUICE_NO_OMISSION = "1";
+    await mkdir(binDir, { recursive: true });
+    await writeFile(launcherPath, "#!/usr/bin/env bash\nexit 0\n", { encoding: "utf8", mode: 0o755 });
+    await writeFile(featureFlagConfigPath, "[features]\ncodex_hooks = true\n", "utf8");
+    await installCodexHook(hooksPath, { allowOmit: true, featureFlagConfigPath });
+
+    const report = await doctorCodexHook(hooksPath, { allowOmit: true, featureFlagConfigPath });
+
+    expect(report.status).toBe("ok");
+    expect(report.expectedCommand).toBe(`${launcherPath} codex-post-tool-use --allow-omit`);
+    expect(report.fixCommand).toBe("tokenjuice install codex --allow-omit");
   });
 
   it("warns for an npm launcher-only hook and accepts the pinned Node command", async () => {
@@ -978,6 +1024,43 @@ describe("runCodexPostToolUseHook", () => {
     expect(debug.skipped).toBe("no-compaction");
     expect(debug.compaction?.authoritative).toBe(false);
     expect(debug.compaction?.kinds).toContain("no-omit-head-tail-passthrough");
+  });
+
+  it("compacts output when the installed hook overrides the no-omit environment", async () => {
+    const home = await createTempDir();
+    process.env.CODEX_HOME = home;
+    process.env.TOKENJUICE_NO_OMISSION = "1";
+
+    const payload = JSON.stringify({
+      hook_event_name: "PostToolUse",
+      tool_name: "Bash",
+      tool_input: { command: "git log --oneline" },
+      tool_response: Array.from(
+        { length: 40 },
+        (_, index) => `${(index + 1).toString(16).padStart(7, "a")} feat: commit ${index}`,
+      ).join("\n"),
+    });
+
+    const { code, stdout, stderr } = await captureStdio(
+      () => runCodexPostToolUseHook(payload, { allowOmit: true }),
+    );
+    const debug = JSON.parse(await readFile(join(home, "tokenjuice-hook.last.json"), "utf8")) as {
+      noOmit?: boolean;
+      rewrote: boolean;
+    };
+
+    expect(code).toBe(0);
+    expect(stderr).toBe("");
+    expect(stdout).toContain('"decision":"block"');
+    expect(debug.noOmit).toBe(false);
+    expect(debug.rewrote).toBe(true);
+  });
+
+  it("rejects conflicting omission policies through the public runtime API", async () => {
+    await expect(runCodexPostToolUseHook("{}", {
+      noOmit: true,
+      allowOmit: true,
+    })).rejects.toThrow("noOmit and allowOmit policies cannot be enabled together");
   });
 
   it("skips rewriting generic fallback output for compound shell diagnostics", async () => {

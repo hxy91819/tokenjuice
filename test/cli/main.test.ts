@@ -27,6 +27,16 @@ describe("parseArgs", () => {
     expect(parseArgs(["wrap", "--no-omit", "--", "echo", "hi"]).noOmit).toBe(true);
     expect(parseArgs(["codex-post-tool-use", "--no-omit"]).noOmit).toBe(true);
   });
+
+  it("parses an explicit Codex omission override", () => {
+    expect(parseArgs(["install", "codex", "--allow-omit"]).allowOmit).toBe(true);
+    expect(parseArgs(["codex-post-tool-use", "--allow-omit"]).allowOmit).toBe(true);
+  });
+
+  it("rejects conflicting omission policies", () => {
+    expect(() => parseArgs(["install", "codex", "--no-omit", "--allow-omit"]))
+      .toThrow("--no-omit and --allow-omit cannot be used together");
+  });
 });
 
 describe("decorateWrapInlineText", () => {

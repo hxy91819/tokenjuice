@@ -141,10 +141,10 @@ try {
     POC_API_KEY: "dummy",
     PATH: `${fakeBin}${delimiter}${process.env.PATH ?? ""}`,
     TOKENJUICE_DEBUG: "1",
-    TOKENJUICE_NO_OMISSION: "",
+    TOKENJUICE_NO_OMISSION: "1",
     NODE_COMPILE_CACHE: join(tempRoot, "node-compile-cache"),
   };
-  await run(process.execPath, [distCli, "install", "codex", "--local"], env);
+  await run(process.execPath, [distCli, "install", "codex", "--local", "--allow-omit"], env);
   const codexRun = await run("codex", [
     "exec",
     "--enable", "hooks",
@@ -170,6 +170,7 @@ try {
     codexVersion: codexRun.stderr.match(/OpenAI Codex v[^\n]+/)?.[0] ?? "unknown",
     hook: {
       rewrote: debug.rewrote,
+      noOmit: debug.noOmit,
       rawChars: debug.rawChars,
       reducedChars: debug.reducedChars,
     },
