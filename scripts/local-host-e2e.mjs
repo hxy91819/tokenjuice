@@ -150,7 +150,7 @@ async function runCodexE2E() {
   assert(hook.stderr === "", `expected Codex hook stderr to stay empty, got ${hook.stderr}`);
   const output = JSON.parse(hook.stdout);
   const additionalContext = output.hookSpecificOutput?.additionalContext;
-  assert(output.continue === false, "expected Codex hook output to replace the original tool result");
+  assert(output.decision === "block", "expected Codex hook output to replace the original tool result");
   assert(output.hookSpecificOutput?.hookEventName === "PostToolUse", "expected Codex PostToolUse output");
   assert(typeof additionalContext === "string", "expected Codex additionalContext");
   assert(additionalContext.includes("Changes not staged:"), "expected Codex hook output to retain status context");
@@ -163,7 +163,6 @@ async function runCodexE2E() {
     !additionalContext.includes("tokenjuice wrap --raw -- <command>"),
     "expected non-authoritative Codex rewrites to avoid a raw rerun hint",
   );
-  assert(!hook.stdout.includes("\"decision\""), "Codex hook feedback must not emit JSON decision:block output");
 
   const authoritativeHook = await run(process.execPath, [distCliPath, "codex-post-tool-use"], {
     env: hookEnv,
