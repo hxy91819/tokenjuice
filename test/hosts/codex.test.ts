@@ -77,7 +77,7 @@ async function captureStdio(run: () => Promise<number>): Promise<{ code: number;
 }
 
 function parseCodexReplacementOutput(stdout: string): {
-  continue?: boolean;
+  decision?: string;
   stopReason?: string;
   reason?: string;
   hookSpecificOutput?: {
@@ -86,7 +86,7 @@ function parseCodexReplacementOutput(stdout: string): {
   };
 } {
   return JSON.parse(stdout) as {
-    continue?: boolean;
+    decision?: string;
     stopReason?: string;
     reason?: string;
     hookSpecificOutput?: {
@@ -820,7 +820,7 @@ describe("runCodexPostToolUseHook", () => {
     expect(stderr).toBe("");
   });
 
-  it("returns post-tool feedback without a block decision when tokenjuice compacts output", async () => {
+  it("returns a block decision that replaces compacted output across Codex tool surfaces", async () => {
     const home = await createTempDir();
     process.env.CODEX_HOME = home;
 
@@ -857,7 +857,7 @@ describe("runCodexPostToolUseHook", () => {
 
     expect(code).toBe(0);
     expect(stderr).toBe("");
-    expect(response.continue).toBe(false);
+    expect(response.decision).toBe("block");
     expect(response.stopReason).toBe("Tokenjuice replaced the original Bash output with the compacted context above.");
     expect(response.reason).toBe("Tokenjuice replaced the original Bash output with the compacted context above.");
     expect(response.hookSpecificOutput?.hookEventName).toBe("PostToolUse");
