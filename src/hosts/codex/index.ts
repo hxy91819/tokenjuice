@@ -104,6 +104,7 @@ export type CodexHookCommandOptions = {
   binaryPath?: string;
   nodePath?: string;
   noOmit?: boolean;
+  allowOmit?: boolean;
   /**
    * Override for the config.toml consulted when reporting the
    * `codex_hooks` feature-flag state. Defaults to `~/.codex/config.toml`.
@@ -112,6 +113,12 @@ export type CodexHookCommandOptions = {
    */
   featureFlagConfigPath?: string;
 };
+
+function validateCodexOmissionPolicy(options: { noOmit?: boolean; allowOmit?: boolean }): void {
+  if (options.noOmit && options.allowOmit) {
+    throw new Error("Codex noOmit and allowOmit policies cannot be enabled together");
+  }
+}
 
 export type CodexDoctorReport = {
   hooksPath: string;
@@ -367,6 +374,7 @@ async function resolveInstalledTokenjuicePath(): Promise<string | undefined> {
 }
 
 async function buildCodexHookCommand(options: CodexHookCommandOptions = {}): Promise<string> {
+  validateCodexOmissionPolicy(options);
   const rawBinaryPath = options.binaryPath ?? process.argv[1];
   const binaryPath = rawBinaryPath && !isAbsolute(rawBinaryPath) ? resolve(rawBinaryPath) : rawBinaryPath;
   const nodePath = options.nodePath ?? process.execPath;
@@ -398,15 +406,20 @@ async function buildCodexHookCommand(options: CodexHookCommandOptions = {}): Pro
       : `${shellQuote(binaryPath)} codex-post-tool-use`;
   }
 
+  if (options.allowOmit) {
+    return `${command} --allow-omit`;
+  }
+
   // Codex launches hooks from its own process, which may not inherit environment variables
   // loaded by the Bash tool's login shell. Snapshot no-omit into the command at install time.
   return options.noOmit || readNoOmissionFromEnv() ? `${command} --no-omit` : command;
 }
 
-function getCodexFixCommand(local = false, noOmit = false): string {
+function getCodexFixCommand(local = false, noOmit = false, allowOmit = false): string {
   return [
     local ? "tokenjuice install codex --local" : TOKENJUICE_CODEX_FIX_COMMAND,
     ...(noOmit ? ["--no-omit"] : []),
+    ...(allowOmit ? ["--allow-omit"] : []),
   ].join(" ");
 }
 
@@ -890,9 +903,9 @@ export async function doctorCodexHook(
   hooksPath = getDefaultHooksPath(),
   options: CodexHookCommandOptions = {},
 ): Promise<CodexDoctorReport> {
-  const noOmit = options.noOmit || readNoOmissionFromEnv();
+  const noOmit = !options.allowOmit && (options.noOmit || readNoOmissionFromEnv());
   const expectedCommand = await buildCodexHookCommand(options);
-  const installFixCommand = getCodexFixCommand(options.local, noOmit);
+  const installFixCommand = getCodexFixCommand(options.local, noOmit, options.allowOmit);
   let fixCommand = installFixCommand;
   const { config, exists } = await readHooksConfig(hooksPath);
   const detectedCommand = findTokenjuiceCodexHookCommand(config);
@@ -955,7 +968,7 @@ export async function doctorCodexHook(
   }
   if (options.local && await detectStaleLocalBuild(checkedPaths)) {
     issues.push("local Codex hook target is older than the source tree");
-    fixCommand = `pnpm build && ${getCodexFixCommand(true, noOmit)}`;
+    fixCommand = `pnpm build && ${getCodexFixCommand(true, noOmit, options.allowOmit)}`;
   }
   if (!featureFlag.enabled) {
     issues.push(
@@ -1144,8 +1157,9 @@ async function recordImmediateHookStats(
 
 export async function runCodexPostToolUseHook(
   rawText: string,
-  options: { noOmit?: boolean } = {},
+  options: { noOmit?: boolean; allowOmit?: boolean } = {},
 ): Promise<number> {
+  validateCodexOmissionPolicy(options);
   let payload: CodexPostToolUsePayload;
   try {
     payload = JSON.parse(rawText) as CodexPostToolUsePayload;
@@ -1154,7 +1168,7 @@ export async function runCodexPostToolUseHook(
   }
 
   const command = payload.tool_input?.command;
-  const noOmit = options.noOmit || readNoOmissionFromEnv();
+  const noOmit = !options.allowOmit && (options.noOmit || readNoOmissionFromEnv());
   const debug: Record<string, unknown> = {
     hookEvent: payload.hook_event_name,
     toolName: payload.tool_name,
@@ -1243,6 +1257,7 @@ export async function runCodexPostToolUseHook(
       visibleText: combinedText,
       ...(typeof payload.cwd === "string" && payload.cwd.trim() ? { cwd: payload.cwd } : {}),
       ...(typeof exitCode === "number" ? { exitCode } : {}),
+      ...(options.allowOmit ? { allowOmit: true } : {}),
       ...(typeof maxInlineChars === "number" ? { maxInlineChars } : {}),
       ...(noOmit ? { noOmit: true } : {}),
       storeRaw,
