@@ -207,29 +207,38 @@ describe("installCodexHook", () => {
     );
   });
 
-  it("captures an explicit omission override when the environment enables no-omit", async () => {
+  it("removes a legacy allow-omit override when reinstalling", async () => {
     const home = await createTempDir();
     const hooksPath = join(home, "hooks.json");
     const binDir = join(home, "bin");
     const launcherPath = join(binDir, "tokenjuice");
 
     process.env.PATH = binDir;
-    process.env.TOKENJUICE_NO_OMISSION = "1";
     await mkdir(binDir, { recursive: true });
     await writeFile(launcherPath, "#!/usr/bin/env bash\nexit 0\n", { encoding: "utf8", mode: 0o755 });
+    await writeFile(hooksPath, `${JSON.stringify({
+      hooks: {
+        PostToolUse: [{
+          matcher: "^Bash$",
+          hooks: [{
+            type: "command",
+            command: `${launcherPath} codex-post-tool-use --allow-omit`,
+            statusMessage: "compacting bash output with tokenjuice",
+            timeout: 30,
+          }],
+        }],
+      },
+    }, null, 2)}\n`, "utf8");
 
-    const result = await installCodexHook(hooksPath, { allowOmit: true });
+    const result = await installCodexHook(hooksPath);
+    const parsed = JSON.parse(await readFile(hooksPath, "utf8")) as {
+      hooks: Record<string, Array<{ hooks: Array<{ command: string }> }>>;
+    };
 
-    expect(result.command).toBe(`${launcherPath} codex-post-tool-use --allow-omit`);
-  });
-
-  it("rejects conflicting omission policies through the public installer API", async () => {
-    const home = await createTempDir();
-
-    await expect(installCodexHook(join(home, "hooks.json"), {
-      noOmit: true,
-      allowOmit: true,
-    })).rejects.toThrow("noOmit and allowOmit policies cannot be enabled together");
+    expect(result.command).toBe(`${launcherPath} codex-post-tool-use`);
+    expect(parsed.hooks.PostToolUse?.[0]?.hooks[0]?.command).toBe(
+      `${launcherPath} codex-post-tool-use`,
+    );
   });
 
   it("pins the current Node runtime when the installed launcher resolves to JavaScript", async () => {
@@ -401,7 +410,7 @@ describe("doctorCodexHook", () => {
     );
   });
 
-  it("accepts an explicit omission override when the environment enables no-omit", async () => {
+  it("reports an installed allow-omit override as stale", async () => {
     const home = await createTempDir();
     const hooksPath = join(home, "hooks.json");
     const binDir = join(home, "bin");
@@ -409,17 +418,32 @@ describe("doctorCodexHook", () => {
     const featureFlagConfigPath = join(home, "config.toml");
 
     process.env.PATH = binDir;
-    process.env.TOKENJUICE_NO_OMISSION = "1";
     await mkdir(binDir, { recursive: true });
     await writeFile(launcherPath, "#!/usr/bin/env bash\nexit 0\n", { encoding: "utf8", mode: 0o755 });
     await writeFile(featureFlagConfigPath, "[features]\ncodex_hooks = true\n", "utf8");
-    await installCodexHook(hooksPath, { allowOmit: true, featureFlagConfigPath });
+    await writeFile(hooksPath, `${JSON.stringify({
+      hooks: {
+        PostToolUse: [{
+          matcher: "^Bash$",
+          hooks: [{
+            type: "command",
+            command: `${launcherPath} codex-post-tool-use --allow-omit`,
+            statusMessage: "compacting bash output with tokenjuice",
+            timeout: 30,
+          }],
+        }],
+      },
+    }, null, 2)}\n`, "utf8");
 
-    const report = await doctorCodexHook(hooksPath, { allowOmit: true, featureFlagConfigPath });
+    const report = await doctorCodexHook(hooksPath, { featureFlagConfigPath });
 
-    expect(report.status).toBe("ok");
-    expect(report.expectedCommand).toBe(`${launcherPath} codex-post-tool-use --allow-omit`);
-    expect(report.fixCommand).toBe("tokenjuice install codex --allow-omit");
+    expect(report.status).toBe("warn");
+    expect(report.expectedCommand).toBe(`${launcherPath} codex-post-tool-use`);
+    expect(report.detectedCommand).toBe(`${launcherPath} codex-post-tool-use --allow-omit`);
+    expect(report.fixCommand).toBe("tokenjuice install codex");
+    expect(report.issues).toContain(
+      "configured Codex hook command does not match the current recommended command",
+    );
   });
 
   it("warns for an npm launcher-only hook and accepts the pinned Node command", async () => {

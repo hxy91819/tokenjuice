@@ -104,7 +104,6 @@ export type CodexHookCommandOptions = {
   binaryPath?: string;
   nodePath?: string;
   noOmit?: boolean;
-  allowOmit?: boolean;
   /**
    * Override for the config.toml consulted when reporting the
    * `codex_hooks` feature-flag state. Defaults to `~/.codex/config.toml`.
@@ -374,7 +373,6 @@ async function resolveInstalledTokenjuicePath(): Promise<string | undefined> {
 }
 
 async function buildCodexHookCommand(options: CodexHookCommandOptions = {}): Promise<string> {
-  validateCodexOmissionPolicy(options);
   const rawBinaryPath = options.binaryPath ?? process.argv[1];
   const binaryPath = rawBinaryPath && !isAbsolute(rawBinaryPath) ? resolve(rawBinaryPath) : rawBinaryPath;
   const nodePath = options.nodePath ?? process.execPath;
@@ -406,20 +404,15 @@ async function buildCodexHookCommand(options: CodexHookCommandOptions = {}): Pro
       : `${shellQuote(binaryPath)} codex-post-tool-use`;
   }
 
-  if (options.allowOmit) {
-    return `${command} --allow-omit`;
-  }
-
   // Codex launches hooks from its own process, which may not inherit environment variables
   // loaded by the Bash tool's login shell. Snapshot no-omit into the command at install time.
   return options.noOmit || readNoOmissionFromEnv() ? `${command} --no-omit` : command;
 }
 
-function getCodexFixCommand(local = false, noOmit = false, allowOmit = false): string {
+function getCodexFixCommand(local = false, noOmit = false): string {
   return [
     local ? "tokenjuice install codex --local" : TOKENJUICE_CODEX_FIX_COMMAND,
     ...(noOmit ? ["--no-omit"] : []),
-    ...(allowOmit ? ["--allow-omit"] : []),
   ].join(" ");
 }
 
@@ -903,9 +896,9 @@ export async function doctorCodexHook(
   hooksPath = getDefaultHooksPath(),
   options: CodexHookCommandOptions = {},
 ): Promise<CodexDoctorReport> {
-  const noOmit = !options.allowOmit && (options.noOmit || readNoOmissionFromEnv());
+  const noOmit = options.noOmit || readNoOmissionFromEnv();
   const expectedCommand = await buildCodexHookCommand(options);
-  const installFixCommand = getCodexFixCommand(options.local, noOmit, options.allowOmit);
+  const installFixCommand = getCodexFixCommand(options.local, noOmit);
   let fixCommand = installFixCommand;
   const { config, exists } = await readHooksConfig(hooksPath);
   const detectedCommand = findTokenjuiceCodexHookCommand(config);
@@ -968,7 +961,7 @@ export async function doctorCodexHook(
   }
   if (options.local && await detectStaleLocalBuild(checkedPaths)) {
     issues.push("local Codex hook target is older than the source tree");
-    fixCommand = `pnpm build && ${getCodexFixCommand(true, noOmit, options.allowOmit)}`;
+    fixCommand = `pnpm build && ${getCodexFixCommand(true, noOmit)}`;
   }
   if (!featureFlag.enabled) {
     issues.push(
