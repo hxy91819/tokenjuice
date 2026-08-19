@@ -222,7 +222,7 @@ function printUsage(): void {
       "  tokenjuice install bob",
       "  tokenjuice install builder",
       "  tokenjuice install charlie",
-      "  tokenjuice install codex [--local] [--no-omit|--allow-omit]",
+      "  tokenjuice install codex [--local] [--no-omit]",
       "  tokenjuice install claude-code [--local]",
       "  tokenjuice install cline [--local]",
       "  tokenjuice install codeant",
@@ -398,7 +398,7 @@ function printUsage(): void {
       "  tokenjuice verify [--fixtures]",
       "  tokenjuice discover [file] [--source-command <cmd>] [--tool-name <name>] [--exit-code <n>] [--source <name>] [--by-source]",
       "  tokenjuice doctor [file|hooks|adal|aether|aictl|ai-memory-protocol|aider|agent-layer|agentinit|agentlink|agentloom|agents-cli|agents-md|agentsge|agentsmesh|amazon-q|amp|antigravity|anywhere-agents|augment|avante|baz|bito|blackbox|blocks|clawdbot|bob|builder|charlie|codex|claude-code|cline|codeant|codebuff|codegen|coder-agents|coderabbit|codebuddy|command-code|continue|copilot-agent|crush|cursor|deepagents|devin|dot-agents|docker-agent|droid|eca|elyra|firebase-studio|forgecode|gemini-cli|gitlab-duo|goose|greptile|grok-build|grok-cli|gptme|jean2|jetbrains-ai|junie|jules|leanctl|kimi|kiro|kilo|localcode|mcp-agent|mini-swe-agent|swe-agent|stagewise|mistral-vibe|mux|novakit|knowns|ona|openhands|open-interpreter|openwebui|pi|pi-go|opencode|plandex|qodo|qoder|qwen-code|replit|roo|rovo|ruler|tabby|tabnine|trae|uipath|vscode-copilot|warp|windsurf|zed|zencoder|copilot-cli] [--local] [--print-instructions] [--source-command <cmd>] [--tool-name <name>] [--exit-code <n>]",
-      "  tokenjuice doctor codex [--local] [--no-omit|--allow-omit]",
+      "  tokenjuice doctor codex [--local] [--no-omit]",
       "  tokenjuice stats [--timezone local|utc|<iana-timezone>] [--source <name>] [--by-source]",
     ].join("\n"),
   );
@@ -580,6 +580,9 @@ export function parseArgs(argv: string[]): ParsedArgs {
 
   if (noOmit && allowOmit) {
     throw new Error("--no-omit and --allow-omit cannot be used together");
+  }
+  if (allowOmit && (command === "install" || command === "doctor")) {
+    throw new Error("--allow-omit is not supported for install or doctor; Codex hooks honor the configured omission policy");
   }
 
   return {
@@ -1342,7 +1345,6 @@ async function runInstall(args: ParsedArgs): Promise<number> {
     const result = await installCodexHook(undefined, {
       local: args.local,
       ...(args.noOmit ? { noOmit: true } : {}),
-      ...(args.allowOmit ? { allowOmit: true } : {}),
     });
     if (args.format === "json") {
       process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
@@ -5118,7 +5120,6 @@ async function runDoctor(args: ParsedArgs): Promise<number> {
     const report = await doctorCodexHook(undefined, {
       local: args.local,
       ...(args.noOmit ? { noOmit: true } : {}),
-      ...(args.allowOmit ? { allowOmit: true } : {}),
     });
 
     if (args.format === "json") {
