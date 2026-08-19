@@ -1161,7 +1161,7 @@ export async function runCodexPostToolUseHook(
   }
 
   const command = payload.tool_input?.command;
-  const noOmit = !options.allowOmit && (options.noOmit || readNoOmissionFromEnv());
+  const noOmit = options.noOmit || readNoOmissionFromEnv();
   const debug: Record<string, unknown> = {
     hookEvent: payload.hook_event_name,
     toolName: payload.tool_name,
@@ -1250,7 +1250,6 @@ export async function runCodexPostToolUseHook(
       visibleText: combinedText,
       ...(typeof payload.cwd === "string" && payload.cwd.trim() ? { cwd: payload.cwd } : {}),
       ...(typeof exitCode === "number" ? { exitCode } : {}),
-      ...(options.allowOmit ? { allowOmit: true } : {}),
       ...(typeof maxInlineChars === "number" ? { maxInlineChars } : {}),
       ...(noOmit ? { noOmit: true } : {}),
       storeRaw,

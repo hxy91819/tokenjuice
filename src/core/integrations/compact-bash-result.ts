@@ -16,7 +16,6 @@ export type CompactBashResultInput = {
   exitCode?: number;
   maxInlineChars?: number;
   noOmit?: boolean;
-  allowOmit?: boolean;
   storeRaw?: boolean;
   metadata?: Record<string, unknown>;
   inspectionPolicy?: InspectionCommandPolicy;
@@ -117,7 +116,7 @@ export async function compactBashResult(input: CompactBashResultInput): Promise<
   const options: ReduceOptions = {
     ...(typeof input.cwd === "string" && input.cwd.trim() ? { cwd: input.cwd } : {}),
     ...(typeof input.maxInlineChars === "number" ? { maxInlineChars: input.maxInlineChars } : {}),
-    ...(input.noOmit || (!input.allowOmit && readNoOmissionFromEnv()) ? { noOmit: true } : {}),
+    ...(input.noOmit || readNoOmissionFromEnv() ? { noOmit: true } : {}),
     recordStats: true,
     ...(input.storeRaw ? { store: true } : {}),
   };
