@@ -185,7 +185,7 @@ describe("installCodexHook", () => {
     expect(parsed.hooks.PostToolUse?.[0]?.hooks[0]?.command).toBe(`${launcherPath} codex-post-tool-use`);
   });
 
-  it("captures no-omit mode in the installed hook command", async () => {
+  it("does not persist the no-omit environment in the installed hook command", async () => {
     const home = await createTempDir();
     const hooksPath = join(home, "hooks.json");
     const binDir = join(home, "bin");
@@ -201,9 +201,9 @@ describe("installCodexHook", () => {
       hooks: Record<string, Array<{ hooks: Array<{ command: string }> }>>;
     };
 
-    expect(result.command).toBe(`${launcherPath} codex-post-tool-use --no-omit`);
+    expect(result.command).toBe(`${launcherPath} codex-post-tool-use`);
     expect(parsed.hooks.PostToolUse?.[0]?.hooks[0]?.command).toBe(
-      `${launcherPath} codex-post-tool-use --no-omit`,
+      `${launcherPath} codex-post-tool-use`,
     );
   });
 
@@ -387,7 +387,7 @@ describe("doctorCodexHook", () => {
     expect(report.featureFlag.enabled).toBe(true);
   });
 
-  it("reports a stale hook when no-omit mode is not captured", async () => {
+  it("keeps a neutral hook healthy when the environment enables no omission", async () => {
     const home = await createTempDir();
     const hooksPath = join(home, "hooks.json");
     const binDir = join(home, "bin");
@@ -401,13 +401,11 @@ describe("doctorCodexHook", () => {
     process.env.TOKENJUICE_NO_OMISSION = "1";
     const report = await doctorCodexHook(hooksPath);
 
-    expect(report.status).toBe("warn");
-    expect(report.expectedCommand).toBe(`${launcherPath} codex-post-tool-use --no-omit`);
+    expect(report.status).toBe("ok");
+    expect(report.expectedCommand).toBe(`${launcherPath} codex-post-tool-use`);
     expect(report.detectedCommand).toBe(`${launcherPath} codex-post-tool-use`);
-    expect(report.fixCommand).toBe("tokenjuice install codex --no-omit");
-    expect(report.issues).toContain(
-      "configured Codex hook command does not match the current recommended command",
-    );
+    expect(report.fixCommand).toBe("tokenjuice install codex");
+    expect(report.issues).toEqual([]);
   });
 
   it("reports an installed allow-omit override as stale", async () => {

@@ -404,9 +404,7 @@ async function buildCodexHookCommand(options: CodexHookCommandOptions = {}): Pro
       : `${shellQuote(binaryPath)} codex-post-tool-use`;
   }
 
-  // Codex launches hooks from its own process, which may not inherit environment variables
-  // loaded by the Bash tool's login shell. Snapshot no-omit into the command at install time.
-  return options.noOmit || readNoOmissionFromEnv() ? `${command} --no-omit` : command;
+  return options.noOmit ? `${command} --no-omit` : command;
 }
 
 function getCodexFixCommand(local = false, noOmit = false): string {
@@ -896,7 +894,7 @@ export async function doctorCodexHook(
   hooksPath = getDefaultHooksPath(),
   options: CodexHookCommandOptions = {},
 ): Promise<CodexDoctorReport> {
-  const noOmit = options.noOmit || readNoOmissionFromEnv();
+  const noOmit = options.noOmit === true;
   const expectedCommand = await buildCodexHookCommand(options);
   const installFixCommand = getCodexFixCommand(options.local, noOmit);
   let fixCommand = installFixCommand;
