@@ -28,13 +28,16 @@ describe("parseArgs", () => {
     expect(parseArgs(["codex-post-tool-use", "--no-omit"]).noOmit).toBe(true);
   });
 
-  it("parses an explicit Codex omission override", () => {
-    expect(parseArgs(["install", "codex", "--allow-omit"]).allowOmit).toBe(true);
+  it("limits the explicit omission override to the hook runtime", () => {
     expect(parseArgs(["codex-post-tool-use", "--allow-omit"]).allowOmit).toBe(true);
+    expect(() => parseArgs(["install", "codex", "--allow-omit"]))
+      .toThrow("Codex hooks honor the configured omission policy");
+    expect(() => parseArgs(["doctor", "codex", "--allow-omit"]))
+      .toThrow("Codex hooks honor the configured omission policy");
   });
 
   it("rejects conflicting omission policies", () => {
-    expect(() => parseArgs(["install", "codex", "--no-omit", "--allow-omit"]))
+    expect(() => parseArgs(["codex-post-tool-use", "--no-omit", "--allow-omit"]))
       .toThrow("--no-omit and --allow-omit cannot be used together");
   });
 });

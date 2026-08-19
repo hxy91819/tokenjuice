@@ -49,25 +49,14 @@ installer snapshots the policy into the hook command as
 Run `tokenjuice doctor codex` after changing the policy. It reports a command
 mismatch when an existing hook needs to be reinstalled.
 
-When no-omit is the shared shell default but Codex should still compact eligible
-results, install the Codex-specific inverse policy explicitly:
-
-```bash
-tokenjuice install codex --allow-omit
-tokenjuice doctor codex --allow-omit
-```
-
-The installer persists `--allow-omit` in the hook command, so Codex compaction
-does not depend on whether the parent process inherited the shared environment.
-
 ## Local verification
 
 To point the real Codex home at the current checkout:
 
 ```bash
 pnpm build
-node dist/cli/main.js install codex --local --allow-omit
-node dist/cli/main.js doctor codex --local --allow-omit
+node dist/cli/main.js install codex --local
+node dist/cli/main.js doctor codex --local
 ```
 
 `doctor` should report `status: ok`. Use it first when the hook is disabled,
