@@ -1050,7 +1050,7 @@ describe("runCodexPostToolUseHook", () => {
     expect(debug.compaction?.kinds).toContain("no-omit-head-tail-passthrough");
   });
 
-  it("does not let a legacy allow-omit hook override the no-omit environment", async () => {
+  it("compacts output when the explicit test policy overrides the no-omit environment", async () => {
     const home = await createTempDir();
     process.env.CODEX_HOME = home;
     process.env.TOKENJUICE_NO_OMISSION = "1";
@@ -1075,9 +1075,9 @@ describe("runCodexPostToolUseHook", () => {
 
     expect(code).toBe(0);
     expect(stderr).toBe("");
-    expect(stdout).toBe("");
-    expect(debug.noOmit).toBe(true);
-    expect(debug.rewrote).toBe(false);
+    expect(stdout).toContain('"decision":"block"');
+    expect(debug.noOmit).toBe(false);
+    expect(debug.rewrote).toBe(true);
   });
 
   it("rejects conflicting omission policies through the public runtime API", async () => {
