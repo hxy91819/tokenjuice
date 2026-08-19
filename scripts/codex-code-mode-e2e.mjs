@@ -141,10 +141,9 @@ try {
     POC_API_KEY: "dummy",
     PATH: `${fakeBin}${delimiter}${process.env.PATH ?? ""}`,
     TOKENJUICE_DEBUG: "1",
-    TOKENJUICE_NO_OMISSION: "1",
     NODE_COMPILE_CACHE: join(tempRoot, "node-compile-cache"),
   };
-  await run(process.execPath, [distCli, "install", "codex", "--local", "--allow-omit"], env);
+  await run(process.execPath, [distCli, "install", "codex", "--local"], env);
   const codexRun = await run("codex", [
     "exec",
     "--enable", "hooks",
