@@ -40,14 +40,13 @@ For the deferred authenticated validation across local Codex profiles, follow
 
 ## No-omit mode
 
-Codex starts `PostToolUse` hooks from its own process, which may not inherit
-environment variables loaded by the Bash tool's login shell. When
-`TOKENJUICE_NO_OMISSION=1` is set, rerun `tokenjuice install codex`; the
-installer snapshots the policy into the hook command as
-`codex-post-tool-use --no-omit`.
+The default installed hook command does not persist omission-policy flags. Set
+`TOKENJUICE_NO_OMISSION=1` in the environment that launches Codex when no-omit
+mode should apply system-wide. Use `tokenjuice install codex --no-omit` only
+when the hook must carry an explicit policy independently of that environment.
 
-Run `tokenjuice doctor codex` after changing the policy. It reports a command
-mismatch when an existing hook needs to be reinstalled.
+Run `tokenjuice doctor codex` after changing an explicit install option. System
+environment changes do not require reinstalling the hook.
 
 ## Local verification
 
