@@ -1,0 +1,423 @@
+{
+  "version": 4,
+  "aggregate": {
+    "branch": "local/aggregate",
+    "upstreamRef": "upstream/main",
+    "upstreamRepository": "vincentkoc/tokenjuice",
+    "lastIntegratedUpstreamCommit": "49bdcf1755833ff1e02e44e6e7fe91c0fb44c16e",
+    "stableTagPattern": "^v\\d+\\.\\d+\\.\\d+$"
+  },
+  "features": [
+    {
+      "id": "codebuddy-session-activation",
+      "branch": "feature/v4-codebuddy-reload-source-stats",
+      "lastPackaged": null,
+      "specIssue": null,
+      "upstreamFeedback": [
+        {
+          "repository": "vincentkoc/tokenjuice",
+          "number": 208,
+          "feedbackUrl": "https://github.com/vincentkoc/tokenjuice/issues/208"
+        }
+      ],
+      "relatedIssues": [],
+      "disposition": "reported",
+      "reason": "PR #208 records the upstream feedback and a later replacement; this v0.8.1 train preserves the legacy implementation until upgrade adoption is verified.",
+      "source": {
+        "baseCommit": "49bdcf1755833ff1e02e44e6e7fe91c0fb44c16e",
+        "versionCommit": "bef03d2a908a3712b6533e72a1727e03a5681838",
+        "commits": [
+          {
+            "commit": "bef03d2a908a3712b6533e72a1727e03a5681838",
+            "logicalPatch": "codebuddy-session-activation-v1"
+          }
+        ]
+      },
+      "dependsOn": [],
+      "integration": {
+        "domain": null
+      }
+    },
+    {
+      "id": "codex-hook-fail-open",
+      "branch": "fix/v4-codex-hook-fail-open",
+      "lastPackaged": null,
+      "specIssue": null,
+      "upstreamFeedback": [
+        {
+          "repository": "vincentkoc/tokenjuice",
+          "number": 211,
+          "feedbackUrl": "https://github.com/vincentkoc/tokenjuice/issues/211"
+        }
+      ],
+      "relatedIssues": [],
+      "disposition": "reported",
+      "reason": "PR #211 reports this behavior and upstream v0.8.2 contains a later implementation; migration retains the current-baseline patches.",
+      "source": {
+        "baseCommit": "49bdcf1755833ff1e02e44e6e7fe91c0fb44c16e",
+        "versionCommit": "c7fff9642b3dc62d891b28d1b78f89e198535f7c",
+        "commits": [
+          {
+            "commit": "f05ac07dd48d38f2ddb321b415f757f7e9b96cfb",
+            "logicalPatch": "codex-hook-fail-open-v1"
+          },
+          {
+            "commit": "c7fff9642b3dc62d891b28d1b78f89e198535f7c",
+            "logicalPatch": "codex-hook-fail-open-e2e-v1"
+          }
+        ]
+      },
+      "dependsOn": [],
+      "integration": {
+        "domain": null
+      }
+    },
+    {
+      "id": "codex-output-replacement",
+      "branch": "feature/v4-codex-output-replacement",
+      "lastPackaged": null,
+      "specIssue": null,
+      "upstreamFeedback": [
+        {
+          "repository": "vincentkoc/tokenjuice",
+          "number": 212,
+          "feedbackUrl": "https://github.com/vincentkoc/tokenjuice/issues/212"
+        }
+      ],
+      "relatedIssues": [],
+      "disposition": "reported",
+      "reason": "PR #212 is the actual upstream feedback and was closed without merge; the fork retains the replacement behavior.",
+      "source": {
+        "baseCommit": "49bdcf1755833ff1e02e44e6e7fe91c0fb44c16e",
+        "versionCommit": "bfa85443b31ed84753086e02889c7875a61371f4",
+        "commits": [
+          {
+            "commit": "8a465195e500948cd7be3bc4b7823a7625079e20",
+            "logicalPatch": "codex-output-replacement-v1"
+          },
+          {
+            "commit": "fc5e0102de87392687d4da03e5278e3c6b0d27c8",
+            "logicalPatch": "codex-output-live-regression-v1"
+          },
+          {
+            "commit": "87db5baa53ec0f88ba41a9a129da287060b6a14a",
+            "logicalPatch": "codex-output-live-isolation-v1"
+          },
+          {
+            "commit": "6b9456413c0c1eb2ed79f22fc31ffe3cfc545bfe",
+            "logicalPatch": "codex-output-replacement-explanation-v1"
+          },
+          {
+            "commit": "bfa85443b31ed84753086e02889c7875a61371f4",
+            "logicalPatch": "codex-output-replacement-status-v1"
+          }
+        ]
+      },
+      "dependsOn": [],
+      "integration": {
+        "domain": null
+      }
+    },
+    {
+      "id": "codex-raw-hint-authority",
+      "branch": "fix/v4-codex-raw-hints",
+      "lastPackaged": null,
+      "specIssue": null,
+      "upstreamFeedback": [
+        {
+          "repository": "vincentkoc/tokenjuice",
+          "number": 214,
+          "feedbackUrl": "https://github.com/vincentkoc/tokenjuice/issues/214"
+        }
+      ],
+      "relatedIssues": [],
+      "disposition": "reported",
+      "reason": "PR #214 reports this behavior and upstream v0.8.2 contains a later implementation; migration retains the selected baseline patch.",
+      "source": {
+        "baseCommit": "49bdcf1755833ff1e02e44e6e7fe91c0fb44c16e",
+        "versionCommit": "0843a07f6f103da92e61bd2cbf0c0fb7846d2498",
+        "commits": [
+          {
+            "commit": "0843a07f6f103da92e61bd2cbf0c0fb7846d2498",
+            "logicalPatch": "codex-raw-hint-authority-v1"
+          }
+        ]
+      },
+      "dependsOn": [
+        "codex-output-replacement"
+      ],
+      "integration": {
+        "domain": null
+      }
+    },
+    {
+      "id": "kiro-native-hook",
+      "branch": "feature/v4-kiro-native-hook",
+      "lastPackaged": null,
+      "specIssue": null,
+      "upstreamFeedback": [],
+      "relatedIssues": [],
+      "disposition": "needs-feedback",
+      "reason": "No actual upstream feedback record was found for the retained Kiro integration.",
+      "source": {
+        "baseCommit": "49bdcf1755833ff1e02e44e6e7fe91c0fb44c16e",
+        "versionCommit": "6444c3878a15d96472eeee626b2485591dfd8b90",
+        "commits": [
+          {
+            "commit": "6444c3878a15d96472eeee626b2485591dfd8b90",
+            "logicalPatch": "kiro-native-hook-v1"
+          }
+        ]
+      },
+      "dependsOn": [],
+      "integration": {
+        "domain": null
+      }
+    },
+    {
+      "id": "fork-release-identity",
+      "branch": "fix/v4-release-identity",
+      "lastPackaged": null,
+      "specIssue": null,
+      "upstreamFeedback": [],
+      "relatedIssues": [],
+      "disposition": "internal",
+      "reason": "Preserves the shipped fork package version on the migration baseline; it is release bookkeeping, not an upstream product claim.",
+      "source": {
+        "baseCommit": "49bdcf1755833ff1e02e44e6e7fe91c0fb44c16e",
+        "versionCommit": "62d62d28878e584d07fa136030c694169370bf93",
+        "commits": [
+          {
+            "commit": "62d62d28878e584d07fa136030c694169370bf93",
+            "logicalPatch": "fork-release-identity-v1"
+          }
+        ]
+      },
+      "dependsOn": [],
+      "integration": {
+        "domain": null
+      }
+    },
+    {
+      "id": "codex-omission-policy",
+      "branch": "fix/v4-codex-omission-policy",
+      "lastPackaged": null,
+      "specIssue": null,
+      "upstreamFeedback": [
+        {
+          "repository": "vincentkoc/tokenjuice",
+          "number": 218,
+          "feedbackUrl": "https://github.com/vincentkoc/tokenjuice/issues/218"
+        }
+      ],
+      "relatedIssues": [],
+      "disposition": "reported",
+      "reason": "PR #218 records the evolved omission-policy implementation merged upstream; adoption is deferred until the stable-baseline upgrade.",
+      "source": {
+        "baseCommit": "49bdcf1755833ff1e02e44e6e7fe91c0fb44c16e",
+        "versionCommit": "a66e9a58e8c226cc7820025f1017354aae7402dc",
+        "commits": [
+          {
+            "commit": "b3c464bbcbc47d21fc1e5e8bc182677a87d6a00f",
+            "logicalPatch": "codex-omission-policy-persistence-v1"
+          },
+          {
+            "commit": "6aa7cebae94ba0ae690bef73f3771b7b1edf3c08",
+            "logicalPatch": "codex-omission-policy-isolation-v1"
+          },
+          {
+            "commit": "47b9b74daeb482e173b2af4c822698cb10c25554",
+            "logicalPatch": "codex-omission-policy-installed-v1"
+          },
+          {
+            "commit": "9666a79d9245ccf6b9a407705c83ddc40a8d5f2e",
+            "logicalPatch": "codex-omission-policy-authority-v1"
+          },
+          {
+            "commit": "d40097ac4955402928ec7ae5f0e0efde7159fc76",
+            "logicalPatch": "codex-omission-policy-explicit-override-v1"
+          },
+          {
+            "commit": "a66e9a58e8c226cc7820025f1017354aae7402dc",
+            "logicalPatch": "codex-omission-policy-neutral-install-v1"
+          }
+        ]
+      },
+      "dependsOn": [
+        "codex-output-replacement"
+      ],
+      "integration": {
+        "domain": null
+      }
+    },
+    {
+      "id": "codex-runtime-hardening",
+      "branch": "fix/v4-codex-runtime-hardening",
+      "lastPackaged": null,
+      "specIssue": null,
+      "upstreamFeedback": [
+        {
+          "repository": "vincentkoc/tokenjuice",
+          "number": 213,
+          "feedbackUrl": "https://github.com/vincentkoc/tokenjuice/issues/213"
+        }
+      ],
+      "relatedIssues": [],
+      "disposition": "reported",
+      "reason": "PR #213 reports the evolved runtime and diagnostics implementation merged upstream; migration preserves the legacy selected patches.",
+      "source": {
+        "baseCommit": "49bdcf1755833ff1e02e44e6e7fe91c0fb44c16e",
+        "versionCommit": "8151fd0e81de91b98154d7090c8be6f32973f084",
+        "commits": [
+          {
+            "commit": "55c8f6fbb87d0e2456eabbecaa70767151fb19ee",
+            "logicalPatch": "codex-node-runtime-pin-v1"
+          },
+          {
+            "commit": "8151fd0e81de91b98154d7090c8be6f32973f084",
+            "logicalPatch": "codex-node-runtime-path-tests-v1"
+          }
+        ]
+      },
+      "dependsOn": [],
+      "integration": {
+        "domain": null
+      }
+    },
+    {
+      "id": "artifact-stats-fail-open",
+      "branch": "fix/v4-artifact-stats-fail-open",
+      "lastPackaged": null,
+      "specIssue": null,
+      "upstreamFeedback": [
+        {
+          "repository": "vincentkoc/tokenjuice",
+          "number": 216,
+          "feedbackUrl": "https://github.com/vincentkoc/tokenjuice/issues/216"
+        }
+      ],
+      "relatedIssues": [],
+      "disposition": "reported",
+      "reason": "PR #216 reports a bounded successor merged upstream; migration retains the current release behavior pending upgrade verification.",
+      "source": {
+        "baseCommit": "49bdcf1755833ff1e02e44e6e7fe91c0fb44c16e",
+        "versionCommit": "c6879c4252644845fe3e961e24a54b00d1dfee25",
+        "commits": [
+          {
+            "commit": "c6879c4252644845fe3e961e24a54b00d1dfee25",
+            "logicalPatch": "artifact-stats-fail-open-v1"
+          }
+        ]
+      },
+      "dependsOn": [],
+      "integration": {
+        "domain": null
+      }
+    },
+    {
+      "id": "test-environment-isolation",
+      "branch": "fix/v4-test-environment-isolation",
+      "lastPackaged": null,
+      "specIssue": null,
+      "upstreamFeedback": [
+        {
+          "repository": "vincentkoc/tokenjuice",
+          "number": 217,
+          "feedbackUrl": "https://github.com/vincentkoc/tokenjuice/issues/217"
+        }
+      ],
+      "relatedIssues": [],
+      "disposition": "reported",
+      "reason": "PR #217 records the test isolation fix merged upstream; migration retains it because the selected baseline predates adoption.",
+      "source": {
+        "baseCommit": "49bdcf1755833ff1e02e44e6e7fe91c0fb44c16e",
+        "versionCommit": "6dddbe4e323d41c54a944981444ff1263dfd552e",
+        "commits": [
+          {
+            "commit": "6dddbe4e323d41c54a944981444ff1263dfd552e",
+            "logicalPatch": "test-environment-isolation-v1"
+          }
+        ]
+      },
+      "dependsOn": [],
+      "integration": {
+        "domain": null
+      }
+    },
+    {
+      "id": "codex-code-mode-output",
+      "branch": "feature/v4-codex-code-mode-output",
+      "lastPackaged": null,
+      "specIssue": null,
+      "upstreamFeedback": [
+        {
+          "repository": "vincentkoc/tokenjuice",
+          "number": 212,
+          "feedbackUrl": "https://github.com/vincentkoc/tokenjuice/issues/212"
+        }
+      ],
+      "relatedIssues": [],
+      "disposition": "reported",
+      "reason": "These follow-up patches implement and document the behavior reported in closed PR #212; they remain fork-owned.",
+      "source": {
+        "baseCommit": "49bdcf1755833ff1e02e44e6e7fe91c0fb44c16e",
+        "versionCommit": "676b8d57b91b64bd8974974b7e39269ba35165f0",
+        "commits": [
+          {
+            "commit": "9cddd079dba576f1b796ac6f72931db190daf2d8",
+            "logicalPatch": "codex-code-mode-output-v1"
+          },
+          {
+            "commit": "8d53211a376145b46cb705d554cded5fca1d13d7",
+            "logicalPatch": "codex-profile-acceptance-checklist-v1"
+          },
+          {
+            "commit": "676b8d57b91b64bd8974974b7e39269ba35165f0",
+            "logicalPatch": "codex-compaction-feedback-v1"
+          }
+        ]
+      },
+      "dependsOn": [
+        "codex-output-replacement"
+      ],
+      "integration": {
+        "domain": null
+      }
+    },
+    {
+      "id": "fork-maintenance-assets",
+      "branch": "fix/v4-fork-maintenance-assets",
+      "lastPackaged": null,
+      "specIssue": null,
+      "upstreamFeedback": [],
+      "relatedIssues": [],
+      "disposition": "internal",
+      "reason": "Owns the project guidance and migration record required to reconstruct and maintain the fork.",
+      "source": {
+        "baseCommit": "49bdcf1755833ff1e02e44e6e7fe91c0fb44c16e",
+        "versionCommit": "c8d55fc4f140604e10b30f27ff75fa6abb38976e",
+        "commits": [
+          {
+            "commit": "e10507f6c7bcea0b2c6d73ca3351c616994d0230",
+            "logicalPatch": "fork-maintenance-assets-v1"
+          },
+          {
+            "commit": "c8d55fc4f140604e10b30f27ff75fa6abb38976e",
+            "logicalPatch": "fork-maintenance-verification-input-v1"
+          }
+        ]
+      },
+      "dependsOn": [],
+      "integration": {
+        "domain": null
+      }
+    }
+  ],
+  "domains": [],
+  "trains": [
+    {
+      "id": "v0.8.1-migration-r2",
+      "manifest": "config/local-aggregate-trains/v0.8.1-migration-r2.json"
+    }
+  ]
+}
