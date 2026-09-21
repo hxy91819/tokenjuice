@@ -71,6 +71,20 @@ Releases are tag-driven and should stay aligned with `package.json`.
 
 If a release tag was pushed against a broken workflow, fix `main`, delete and recreate the tag, then rerun the release from the corrected commit.
 
+<!-- open-source-fork-maintenance:start -->
+## Local aggregate fork maintenance
+
+This checkout is maintained as a non-maintainer fork. After migration cutover, its root workspace stays on `local/aggregate` for integration and experience. Its release baseline is the selected tag and SHA in the frozen train; `upstream/main` discovers newer releases. Verify and package exact candidates in isolated worktrees. Publish completed snapshots to `fork`; never use the aggregate for an upstream pull request.
+
+Every product change starts on an independent first-tier `feature/*` or `fix/*` source in its own worktree. Its registered ordered commits, not its complete ancestry, define the patch. Related patches may enter a second-tier domain worktree that owns stable-release adaptation; dormant first-tier refs remain fixed until their feature changes. This fork is currently direct-only. Add a domain when recurring shared compatibility work appears. Product behavior changes return to a first-tier source. Contributions select the target feature, its dependencies, and relevant adaptations.
+
+[`config/local-aggregate-features.json`](config/local-aggregate-features.json) is the authoritative registry for ownership, dependencies, mappings, specifications, upstream feedback, and dispositions. A committed train manifest freezes one baseline and the exact direct/domain patches. Build receipts bind the final source SHA and train digest to real artifacts outside the source commit. Project-specific commands, skill installation, migration evidence, and delivery boundaries live in [`docs/fork-maintenance.md`](docs/fork-maintenance.md).
+
+Invoke `$autoreview` after source development and relevant candidate verification; a source is verified only after no accepted/actionable findings remain. Publish completed source/domain branches and immutable train/candidate refs to `fork`. Rebuilt moving refs use explicit `--force-with-lease`; immutable refs are create-only. Compose the aggregate from a frozen train, not old aggregate ancestry. Repair product conflicts in their owning source or domain.
+
+Fork issues are local specifications; related issues are context, and only `upstreamFeedback` records an actual upstream report. Opening an upstream issue requires explicit user confirmation. Use `$open-source-fork-maintenance` for setup, migration, upstream synchronization, aggregate rebuilding, and packaging. Existing forks migrate on their current baseline before upgrading. The default later upgrade target is the latest matching stable tag; unreleased trunk commits remain debt unless explicitly selected. Report verified, packaged, published, and deployed states separately.
+<!-- open-source-fork-maintenance:end -->
+
 ## Commit & Pull Request Guidelines
 
 Recent history favors short, imperative subjects, usually Conventional Commit style, for example:
