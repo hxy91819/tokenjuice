@@ -1,6 +1,6 @@
 import { join } from "node:path";
 
-import { parseShellWords, shellQuote } from "../shared/hook-command.js";
+import { isNodeExecutablePath, isTokenjuiceExecutablePath, parseShellWords, shellQuote } from "../shared/hook-command.js";
 import { buildHookCommandDoctorFields } from "../shared/hook-command-doctor.js";
 import { buildTokenjuiceGuidanceBullets, TOKENJUICE_FULL_COMMAND, TOKENJUICE_RAW_COMMAND, TOKENJUICE_WRAP_COMMAND } from "../shared/instruction-guidance.js";
 import { collectGuidanceIssues, readInstructionFile, removeInstructionFile, writeInstructionFile } from "../shared/instruction-file.js";
@@ -193,22 +193,29 @@ function findTokenjuiceKiroHook(config: KiroAgentConfig): KiroAgentHook | undefi
 }
 
 function containsUnsafeOuterShellSyntax(command: string, platform: NodeJS.Platform = process.platform): boolean {
-  if (command.includes("\n") || command.includes("\r")) {
+  const hasLineBreak = command.includes("\n") || command.includes("\r");
+  if (hasLineBreak && platform === "win32") {
     return true;
   }
 
   let quote: "'" | "\"" | null = null;
   let escaping = false;
+  let wordStarted = false;
   for (let index = 0; index < command.length; index += 1) {
     const char = command[index]!;
     const next = command[index + 1];
 
+    if ((char === "\n" || char === "\r") && quote === null) {
+      return true;
+    }
     if (escaping) {
       escaping = false;
+      wordStarted = true;
       continue;
     }
     if (platform !== "win32" && quote !== "'" && char === "\\") {
       escaping = true;
+      wordStarted = true;
       continue;
     }
     if (quote === "'") {
@@ -217,19 +224,34 @@ function containsUnsafeOuterShellSyntax(command: string, platform: NodeJS.Platfo
       }
       continue;
     }
-    if (char === "'") {
+    if (hasLineBreak && quote === null && char === "$" && (next === "'" || next === "\"")) {
+      return true;
+    }
+    if (char === "'" && quote !== "\"") {
       quote = "'";
+      wordStarted = true;
       continue;
     }
     if (char === "\"") {
       quote = quote === "\"" ? null : "\"";
+      wordStarted = true;
       continue;
     }
     if (char === "`" || (char === "$" && next === "(")) {
       return true;
     }
+    if (quote === null && /\s/u.test(char)) {
+      wordStarted = false;
+      continue;
+    }
+    if (quote === null && char === "#" && !wordStarted) {
+      return true;
+    }
     if (quote === null && ";|&<>()".includes(char)) {
       return true;
+    }
+    if (quote === null) {
+      wordStarted = true;
     }
   }
 
@@ -244,23 +266,74 @@ function getConfiguredWrapPrefix(wrapLauncher: string, nodePath = process.execPa
 
 function getConfiguredWrapCommand(
   wrapLauncher: string,
-  args: string[],
+  argsText: string,
   platform: NodeJS.Platform = process.platform,
   nodePath = process.execPath,
 ): string {
-  return [...getConfiguredWrapPrefix(wrapLauncher, nodePath), ...args]
+  const prefix = getConfiguredWrapPrefix(wrapLauncher, nodePath)
     .map((value) => shellQuote(value, platform))
     .join(" ");
+  return `${prefix} ${argsText}`;
 }
 
-function getWrapperArgs(command: string, platform: NodeJS.Platform = process.platform): string[] | undefined {
-  if (containsUnsafeOuterShellSyntax(command, platform)) {
+function getPosixShellWordSpans(command: string): Array<{ start: number; end: number }> {
+  const spans: Array<{ start: number; end: number }> = [];
+  let start: number | undefined;
+  let quote: "'" | "\"" | null = null;
+  let escaping = false;
+  for (let index = 0; index < command.length; index += 1) {
+    const char = command[index]!;
+    if (quote === null && !escaping && /\s/u.test(char)) {
+      if (start !== undefined) {
+        spans.push({ start, end: index });
+        start = undefined;
+      }
+      continue;
+    }
+    start ??= index;
+    if (escaping) {
+      escaping = false;
+      continue;
+    }
+    if (quote !== "'" && char === "\\") {
+      escaping = true;
+      continue;
+    }
+    if (quote === "'") {
+      if (char === "'") {
+        quote = null;
+      }
+      continue;
+    }
+    if (char === "'" && quote === null) {
+      quote = "'";
+      continue;
+    }
+    if (char === "\"") {
+      quote = quote === "\"" ? null : "\"";
+    }
+  }
+  if (start !== undefined) {
+    spans.push({ start, end: command.length });
+  }
+  return spans;
+}
+
+function getWrapperArgs(command: string, platform: NodeJS.Platform = process.platform): string | undefined {
+  if (
+    platform === "win32"
+    || containsUnsafeOuterShellSyntax(command, platform)
+    || command.includes("\n")
+    || command.includes("\r")
+  ) {
     return undefined;
   }
   const argv = parseShellWords(command, platform);
   const wrapIndex = argv.indexOf("wrap");
-  const looksLikeDirectWrapper = wrapIndex === 1;
-  const looksLikeNodeWrapper = wrapIndex === 2 && argv[1]?.endsWith(".js");
+  const looksLikeDirectWrapper = wrapIndex === 1 && isTokenjuiceExecutablePath(argv[0] ?? "");
+  const looksLikeNodeWrapper = wrapIndex === 2
+    && isNodeExecutablePath(argv[0] ?? "")
+    && argv[1]?.endsWith(".js");
   if (!looksLikeDirectWrapper && !looksLikeNodeWrapper) {
     return undefined;
   }
@@ -268,7 +341,12 @@ function getWrapperArgs(command: string, platform: NodeJS.Platform = process.pla
   if (separatorIndex <= wrapIndex || separatorIndex >= argv.length - 1) {
     return undefined;
   }
-  return argv.slice(wrapIndex + 1);
+  const wrapSpan = getPosixShellWordSpans(command)[wrapIndex];
+  if (!wrapSpan) {
+    return undefined;
+  }
+  const argsText = command.slice(wrapSpan.end).trimStart();
+  return argsText || undefined;
 }
 
 function isSafelyWrappedKiroCommand(
