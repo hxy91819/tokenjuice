@@ -184,6 +184,10 @@
       {
         "logicalPatch": "codex-code-mode-e2e-exit-v1",
         "commit": "faea886e1fab1002058ef65ca7800e7c53a35484"
+      },
+      {
+        "logicalPatch": "codex-code-mode-e2e-omission-isolation-v1",
+        "commit": "15ff147d0b9c37d252d5b5d8e39646723045dd4c"
       }
     ]
   },
@@ -242,7 +246,8 @@
       "kiro-multiline-wrapper-v1"
     ],
     "codex-code-mode-e2e-exit": [
-      "codex-code-mode-e2e-exit-v1"
+      "codex-code-mode-e2e-exit-v1",
+      "codex-code-mode-e2e-omission-isolation-v1"
     ]
   },
   "domains": [],
@@ -487,6 +492,14 @@
       "features": [
         "codex-code-mode-e2e-exit"
       ]
+    },
+    {
+      "logicalPatch": "codex-code-mode-e2e-omission-isolation-v1",
+      "commit": "15ff147d0b9c37d252d5b5d8e39646723045dd4c",
+      "sourceCommit": "15ff147d0b9c37d252d5b5d8e39646723045dd4c",
+      "features": [
+        "codex-code-mode-e2e-exit"
+      ]
     }
   ],
   "verification": {
@@ -503,5 +516,5 @@
     "fork-maintenance-assets-v1",
     "fork-maintenance-verification-input-v1"
   ],
-  "notes": "Structural migration on v0.8.1, revision 3 with separately owned fixes accepted from candidate autoreview. Upgrade to the latest stable tag is intentionally a later train."
+  "notes": "Structural migration on v0.8.1, revision 4 with separately owned fixes accepted from candidate autoreview. Upgrade to the latest stable tag is intentionally a later train."
 }

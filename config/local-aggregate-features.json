@@ -446,14 +446,18 @@
       "upstreamFeedback": [],
       "relatedIssues": [],
       "disposition": "internal",
-      "reason": "Candidate autoreview found that the fork-only Code Mode regression script reported failures without a nonzero exit; this is verification maintenance.",
+      "reason": "Candidate autoreview found that the fork-only Code Mode regression script could report false success and inherited omission policy; these are verification-maintenance fixes.",
       "source": {
         "baseCommit": "9a1ed34591c5ad6777f345458ef6eeed020f9fe5",
-        "versionCommit": "faea886e1fab1002058ef65ca7800e7c53a35484",
+        "versionCommit": "15ff147d0b9c37d252d5b5d8e39646723045dd4c",
         "commits": [
           {
             "commit": "faea886e1fab1002058ef65ca7800e7c53a35484",
             "logicalPatch": "codex-code-mode-e2e-exit-v1"
+          },
+          {
+            "commit": "15ff147d0b9c37d252d5b5d8e39646723045dd4c",
+            "logicalPatch": "codex-code-mode-e2e-omission-isolation-v1"
           }
         ]
       },
@@ -468,8 +472,8 @@
   "domains": [],
   "trains": [
     {
-      "id": "v0.8.1-migration-r3",
-      "manifest": "config/local-aggregate-trains/v0.8.1-migration-r3.json"
+      "id": "v0.8.1-migration-r4",
+      "manifest": "config/local-aggregate-trains/v0.8.1-migration-r4.json"
     }
   ]
 }
