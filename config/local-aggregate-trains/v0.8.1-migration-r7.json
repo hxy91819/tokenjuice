@@ -177,7 +177,7 @@
     "kiro-multiline-wrapper": [
       {
         "logicalPatch": "kiro-multiline-wrapper-v1",
-        "commit": "301d66a2511ae79356fe3697c1bb0db370b3086d"
+        "commit": "31bd505b516278ca33551d8c99558bab242decdc"
       }
     ],
     "codex-code-mode-e2e-exit": [
@@ -479,8 +479,8 @@
     },
     {
       "logicalPatch": "kiro-multiline-wrapper-v1",
-      "commit": "301d66a2511ae79356fe3697c1bb0db370b3086d",
-      "sourceCommit": "301d66a2511ae79356fe3697c1bb0db370b3086d",
+      "commit": "31bd505b516278ca33551d8c99558bab242decdc",
+      "sourceCommit": "31bd505b516278ca33551d8c99558bab242decdc",
       "features": [
         "kiro-multiline-wrapper"
       ]
@@ -516,5 +516,5 @@
     "fork-maintenance-assets-v1",
     "fork-maintenance-verification-input-v1"
   ],
-  "notes": "Structural migration on v0.8.1, revision 6 with separately owned fixes accepted from candidate autoreview. Upgrade to the latest stable tag is intentionally a later train."
+  "notes": "Structural migration on v0.8.1, revision 7 with separately owned fixes accepted from candidate autoreview. Upgrade to the latest stable tag is intentionally a later train."
 }
