@@ -165,7 +165,8 @@ try {
   report = {
     ok: debug.rewrote === true
       && !JSON.stringify(customOutput).includes(rawMarker)
-      && developerContext.includes("#206 fix(core): preserve compound command output"),
+      && developerContext.includes("#206 fix(core): preserve compound command output")
+      && (codexRun.stdout.includes("POC_DONE") || codexRun.stderr.includes("POC_DONE")),
     codexVersion: codexRun.stderr.match(/OpenAI Codex v[^\n]+/)?.[0] ?? "unknown",
     hook: {
       rewrote: debug.rewrote,
@@ -187,3 +188,6 @@ try {
 }
 
 process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+if (!report.ok) {
+  process.exitCode = 1;
+}
