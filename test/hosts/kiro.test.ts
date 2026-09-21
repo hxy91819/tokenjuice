@@ -220,15 +220,30 @@ describe("kiro native hook", () => {
       kiroEvent(`${process.execPath} /tmp/fake.js wrap -- printf bypass`),
       "/repo/dist/cli/main.js",
     );
+    const ordinaryCommand = await runKiroPreToolUseHook(
+      kiroEvent("echo wrap -- rm -rf build"),
+    );
+    const ordinaryRetry = String(stderr.mock.calls.at(-1)?.[0]);
+    const multilineLookalike = await runKiroPreToolUseHook(
+      kiroEvent("./tokenjuice wrap -- bash -c 'printf \"a\\nb\"\nprintf done'"),
+      "/opt/tokenjuice",
+    );
+    const multilineRetry = String(stderr.mock.calls.at(-1)?.[0]);
 
     expect(fakeBinary).toBe(2);
     expect(fakeNodeScript).toBe(2);
+    expect(ordinaryCommand).toBe(2);
+    expect(multilineLookalike).toBe(2);
     expect(stderr).toHaveBeenCalledWith(expect.stringContaining(
       "/opt/tokenjuice wrap --raw -- printf secret",
     ));
     expect(stderr).toHaveBeenCalledWith(expect.stringContaining(
       `${process.execPath} /repo/dist/cli/main.js wrap -- printf bypass`,
     ));
+    expect(ordinaryRetry).toContain("echo wrap -- rm -rf build");
+    expect(ordinaryRetry).not.toContain("Retry exactly as:\ntokenjuice wrap -- rm -rf build\n");
+    expect(multilineRetry).toContain(String.raw`a\nb`);
+    expect(multilineRetry).not.toContain("anb");
   });
 
   it("allows compound commands only when they are quoted inside the wrapper", async () => {

@@ -1,6 +1,6 @@
 import { join } from "node:path";
 
-import { parseShellWords, shellQuote } from "../shared/hook-command.js";
+import { isNodeExecutablePath, isTokenjuiceExecutablePath, parseShellWords, shellQuote } from "../shared/hook-command.js";
 import { buildHookCommandDoctorFields } from "../shared/hook-command-doctor.js";
 import { buildTokenjuiceGuidanceBullets, TOKENJUICE_FULL_COMMAND, TOKENJUICE_RAW_COMMAND, TOKENJUICE_WRAP_COMMAND } from "../shared/instruction-guidance.js";
 import { collectGuidanceIssues, readInstructionFile, removeInstructionFile, writeInstructionFile } from "../shared/instruction-file.js";
@@ -276,13 +276,15 @@ function getConfiguredWrapCommand(
 }
 
 function getWrapperArgs(command: string, platform: NodeJS.Platform = process.platform): string[] | undefined {
-  if (containsUnsafeOuterShellSyntax(command, platform)) {
+  if (containsUnsafeOuterShellSyntax(command, platform) || command.includes("\n") || command.includes("\r")) {
     return undefined;
   }
   const argv = parseShellWords(command, platform);
   const wrapIndex = argv.indexOf("wrap");
-  const looksLikeDirectWrapper = wrapIndex === 1;
-  const looksLikeNodeWrapper = wrapIndex === 2 && argv[1]?.endsWith(".js");
+  const looksLikeDirectWrapper = wrapIndex === 1 && isTokenjuiceExecutablePath(argv[0] ?? "");
+  const looksLikeNodeWrapper = wrapIndex === 2
+    && isNodeExecutablePath(argv[0] ?? "")
+    && argv[1]?.endsWith(".js");
   if (!looksLikeDirectWrapper && !looksLikeNodeWrapper) {
     return undefined;
   }
