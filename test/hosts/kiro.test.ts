@@ -220,15 +220,42 @@ describe("kiro native hook", () => {
       kiroEvent(`${process.execPath} /tmp/fake.js wrap -- printf bypass`),
       "/repo/dist/cli/main.js",
     );
+    const semanticArgs = String.raw`./tokenjuice wrap -- printf "$HOME/file" '*.txt' '' 'a\b'`;
+    const semanticRetryStatus = await runKiroPreToolUseHook(kiroEvent(semanticArgs), "/opt/tokenjuice");
+    const semanticRetry = String(stderr.mock.calls.at(-1)?.[0]);
+    const quotedLauncherStatus = await runKiroPreToolUseHook(
+      kiroEvent("'/opt/old wrap dir/tokenjuice' wrap -- printf ok"),
+      "/opt/tokenjuice",
+    );
+    const quotedLauncherRetry = String(stderr.mock.calls.at(-1)?.[0]);
+    const ordinaryCommand = await runKiroPreToolUseHook(
+      kiroEvent("echo wrap -- rm -rf build"),
+    );
+    const ordinaryRetry = String(stderr.mock.calls.at(-1)?.[0]);
+    const multilineLookalike = await runKiroPreToolUseHook(
+      kiroEvent("./tokenjuice wrap -- bash -c 'printf \"a\\nb\"\nprintf done'"),
+      "/opt/tokenjuice",
+    );
+    const multilineRetry = String(stderr.mock.calls.at(-1)?.[0]);
 
     expect(fakeBinary).toBe(2);
     expect(fakeNodeScript).toBe(2);
+    expect(semanticRetryStatus).toBe(2);
+    expect(semanticRetry).toContain(String.raw`/opt/tokenjuice wrap -- printf "$HOME/file" '*.txt' '' 'a\b'`);
+    expect(quotedLauncherStatus).toBe(2);
+    expect(quotedLauncherRetry).toContain("/opt/tokenjuice wrap -- printf ok");
+    expect(ordinaryCommand).toBe(2);
+    expect(multilineLookalike).toBe(2);
     expect(stderr).toHaveBeenCalledWith(expect.stringContaining(
       "/opt/tokenjuice wrap --raw -- printf secret",
     ));
     expect(stderr).toHaveBeenCalledWith(expect.stringContaining(
       `${process.execPath} /repo/dist/cli/main.js wrap -- printf bypass`,
     ));
+    expect(ordinaryRetry).toContain("echo wrap -- rm -rf build");
+    expect(ordinaryRetry).not.toContain("Retry exactly as:\ntokenjuice wrap -- rm -rf build\n");
+    expect(multilineRetry).toContain(String.raw`a\nb`);
+    expect(multilineRetry).not.toContain("anb");
   });
 
   it("allows compound commands only when they are quoted inside the wrapper", async () => {
@@ -237,13 +264,50 @@ describe("kiro native hook", () => {
     const inner = await runKiroPreToolUseHook(
       kiroEvent("tokenjuice wrap -- /bin/bash -lc 'printf one && printf two'"),
     );
+    const multilineInner = await runKiroPreToolUseHook(
+      kiroEvent("tokenjuice wrap -- /bin/bash -lc 'printf one\nprintf two'"),
+    );
+    const hashInWord = await runKiroPreToolUseHook(
+      kiroEvent("tokenjuice wrap -- cat notes#1.txt"),
+    );
     const outer = await runKiroPreToolUseHook(
       kiroEvent("tokenjuice wrap -- printf one && printf bypass"),
     );
+    const multilineOuter = await runKiroPreToolUseHook(
+      kiroEvent("tokenjuice wrap -- printf one\nprintf bypass"),
+    );
+    const misleadingQuote = await runKiroPreToolUseHook(
+      kiroEvent("tokenjuice wrap -- printf \"'\"\nprintf bypass # '"),
+    );
+    const commentQuote = await runKiroPreToolUseHook(
+      kiroEvent("tokenjuice wrap -- printf one # '\nprintf bypass\n# '"),
+    );
+    const ansiCQuote = await runKiroPreToolUseHook(
+      kiroEvent("tokenjuice wrap -- printf $'a\\\\''\nprintf bypass # '"),
+    );
 
     expect(inner).toBe(0);
+    expect(multilineInner).toBe(0);
+    expect(hashInWord).toBe(0);
     expect(outer).toBe(2);
+    expect(multilineOuter).toBe(2);
+    expect(misleadingQuote).toBe(2);
+    expect(commentQuote).toBe(2);
+    expect(ansiCQuote).toBe(2);
     expect(stderr).toHaveBeenCalledWith(expect.stringContaining("Retry exactly as"));
+  });
+
+  it("accepts its generated multiline retry when the inner script uses ANSI-C quotes", async () => {
+    const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    const command = "printf $'hello\\n'\nprintf done";
+
+    const unwrapped = await runKiroPreToolUseHook(kiroEvent(command));
+    const message = String(stderr.mock.calls.at(-1)?.[0]);
+    const retry = message.split("Retry exactly as:\n")[1]?.trim();
+
+    expect(unwrapped).toBe(2);
+    expect(retry).toBeTruthy();
+    await expect(runKiroPreToolUseHook(kiroEvent(retry!))).resolves.toBe(0);
   });
 
   it("fails closed for malformed shell hook input", async () => {
