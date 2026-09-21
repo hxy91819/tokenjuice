@@ -270,6 +270,19 @@ describe("kiro native hook", () => {
     expect(stderr).toHaveBeenCalledWith(expect.stringContaining("Retry exactly as"));
   });
 
+  it("accepts its generated multiline retry when the inner script uses ANSI-C quotes", async () => {
+    const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    const command = "printf $'hello\\n'\nprintf done";
+
+    const unwrapped = await runKiroPreToolUseHook(kiroEvent(command));
+    const message = String(stderr.mock.calls.at(-1)?.[0]);
+    const retry = message.split("Retry exactly as:\n")[1]?.trim();
+
+    expect(unwrapped).toBe(2);
+    expect(retry).toBeTruthy();
+    await expect(runKiroPreToolUseHook(kiroEvent(retry!))).resolves.toBe(0);
+  });
+
   it("fails closed for malformed shell hook input", async () => {
     vi.spyOn(process.stderr, "write").mockImplementation(() => true);
 

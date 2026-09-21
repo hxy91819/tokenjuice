@@ -194,7 +194,7 @@ function findTokenjuiceKiroHook(config: KiroAgentConfig): KiroAgentHook | undefi
 
 function containsUnsafeOuterShellSyntax(command: string, platform: NodeJS.Platform = process.platform): boolean {
   const hasLineBreak = command.includes("\n") || command.includes("\r");
-  if (hasLineBreak && (platform === "win32" || command.includes("$'") || command.includes("$\""))) {
+  if (hasLineBreak && platform === "win32") {
     return true;
   }
 
@@ -223,6 +223,9 @@ function containsUnsafeOuterShellSyntax(command: string, platform: NodeJS.Platfo
         quote = null;
       }
       continue;
+    }
+    if (hasLineBreak && quote === null && char === "$" && (next === "'" || next === "\"")) {
+      return true;
     }
     if (char === "'" && quote !== "\"") {
       quote = "'";
