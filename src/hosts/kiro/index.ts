@@ -266,17 +266,66 @@ function getConfiguredWrapPrefix(wrapLauncher: string, nodePath = process.execPa
 
 function getConfiguredWrapCommand(
   wrapLauncher: string,
-  args: string[],
+  argsText: string,
   platform: NodeJS.Platform = process.platform,
   nodePath = process.execPath,
 ): string {
-  return [...getConfiguredWrapPrefix(wrapLauncher, nodePath), ...args]
+  const prefix = getConfiguredWrapPrefix(wrapLauncher, nodePath)
     .map((value) => shellQuote(value, platform))
     .join(" ");
+  return `${prefix} ${argsText}`;
 }
 
-function getWrapperArgs(command: string, platform: NodeJS.Platform = process.platform): string[] | undefined {
-  if (containsUnsafeOuterShellSyntax(command, platform) || command.includes("\n") || command.includes("\r")) {
+function getPosixShellWordSpans(command: string): Array<{ start: number; end: number }> {
+  const spans: Array<{ start: number; end: number }> = [];
+  let start: number | undefined;
+  let quote: "'" | "\"" | null = null;
+  let escaping = false;
+  for (let index = 0; index < command.length; index += 1) {
+    const char = command[index]!;
+    if (quote === null && !escaping && /\s/u.test(char)) {
+      if (start !== undefined) {
+        spans.push({ start, end: index });
+        start = undefined;
+      }
+      continue;
+    }
+    start ??= index;
+    if (escaping) {
+      escaping = false;
+      continue;
+    }
+    if (quote !== "'" && char === "\\") {
+      escaping = true;
+      continue;
+    }
+    if (quote === "'") {
+      if (char === "'") {
+        quote = null;
+      }
+      continue;
+    }
+    if (char === "'" && quote === null) {
+      quote = "'";
+      continue;
+    }
+    if (char === "\"") {
+      quote = quote === "\"" ? null : "\"";
+    }
+  }
+  if (start !== undefined) {
+    spans.push({ start, end: command.length });
+  }
+  return spans;
+}
+
+function getWrapperArgs(command: string, platform: NodeJS.Platform = process.platform): string | undefined {
+  if (
+    platform === "win32"
+    || containsUnsafeOuterShellSyntax(command, platform)
+    || command.includes("\n")
+    || command.includes("\r")
+  ) {
     return undefined;
   }
   const argv = parseShellWords(command, platform);
@@ -292,7 +341,12 @@ function getWrapperArgs(command: string, platform: NodeJS.Platform = process.pla
   if (separatorIndex <= wrapIndex || separatorIndex >= argv.length - 1) {
     return undefined;
   }
-  return argv.slice(wrapIndex + 1);
+  const wrapSpan = getPosixShellWordSpans(command)[wrapIndex];
+  if (!wrapSpan) {
+    return undefined;
+  }
+  const argsText = command.slice(wrapSpan.end).trimStart();
+  return argsText || undefined;
 }
 
 function isSafelyWrappedKiroCommand(

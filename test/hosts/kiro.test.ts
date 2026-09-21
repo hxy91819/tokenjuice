@@ -220,6 +220,14 @@ describe("kiro native hook", () => {
       kiroEvent(`${process.execPath} /tmp/fake.js wrap -- printf bypass`),
       "/repo/dist/cli/main.js",
     );
+    const semanticArgs = String.raw`./tokenjuice wrap -- printf "$HOME/file" '*.txt' '' 'a\b'`;
+    const semanticRetryStatus = await runKiroPreToolUseHook(kiroEvent(semanticArgs), "/opt/tokenjuice");
+    const semanticRetry = String(stderr.mock.calls.at(-1)?.[0]);
+    const quotedLauncherStatus = await runKiroPreToolUseHook(
+      kiroEvent("'/opt/old wrap dir/tokenjuice' wrap -- printf ok"),
+      "/opt/tokenjuice",
+    );
+    const quotedLauncherRetry = String(stderr.mock.calls.at(-1)?.[0]);
     const ordinaryCommand = await runKiroPreToolUseHook(
       kiroEvent("echo wrap -- rm -rf build"),
     );
@@ -232,6 +240,10 @@ describe("kiro native hook", () => {
 
     expect(fakeBinary).toBe(2);
     expect(fakeNodeScript).toBe(2);
+    expect(semanticRetryStatus).toBe(2);
+    expect(semanticRetry).toContain(String.raw`/opt/tokenjuice wrap -- printf "$HOME/file" '*.txt' '' 'a\b'`);
+    expect(quotedLauncherStatus).toBe(2);
+    expect(quotedLauncherRetry).toContain("/opt/tokenjuice wrap -- printf ok");
     expect(ordinaryCommand).toBe(2);
     expect(multilineLookalike).toBe(2);
     expect(stderr).toHaveBeenCalledWith(expect.stringContaining(
