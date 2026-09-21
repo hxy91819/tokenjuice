@@ -423,10 +423,10 @@
       "reason": "Candidate autoreview found that the Kiro guard blocked legitimate quoted multiline shell payloads; no upstream report has been filed.",
       "source": {
         "baseCommit": "9a1ed34591c5ad6777f345458ef6eeed020f9fe5",
-        "versionCommit": "edd3e82620618e9acdf0a1d5dc46d5e48a9aff70",
+        "versionCommit": "cd416eafb452a7a2579c97769d9c4607ff31850e",
         "commits": [
           {
-            "commit": "edd3e82620618e9acdf0a1d5dc46d5e48a9aff70",
+            "commit": "cd416eafb452a7a2579c97769d9c4607ff31850e",
             "logicalPatch": "kiro-multiline-wrapper-v1"
           }
         ]
@@ -472,8 +472,8 @@
   "domains": [],
   "trains": [
     {
-      "id": "v0.8.1-migration-r4",
-      "manifest": "config/local-aggregate-trains/v0.8.1-migration-r4.json"
+      "id": "v0.8.1-migration-r5",
+      "manifest": "config/local-aggregate-trains/v0.8.1-migration-r5.json"
     }
   ]
 }
