@@ -141,6 +141,7 @@ try {
     POC_API_KEY: "dummy",
     PATH: `${fakeBin}${delimiter}${process.env.PATH ?? ""}`,
     TOKENJUICE_DEBUG: "1",
+    TOKENJUICE_NO_OMISSION: "",
     NODE_COMPILE_CACHE: join(tempRoot, "node-compile-cache"),
   };
   await run(process.execPath, [distCli, "install", "codex", "--local"], env);
