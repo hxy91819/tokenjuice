@@ -237,12 +237,36 @@ describe("kiro native hook", () => {
     const inner = await runKiroPreToolUseHook(
       kiroEvent("tokenjuice wrap -- /bin/bash -lc 'printf one && printf two'"),
     );
+    const multilineInner = await runKiroPreToolUseHook(
+      kiroEvent("tokenjuice wrap -- /bin/bash -lc 'printf one\nprintf two'"),
+    );
+    const hashInWord = await runKiroPreToolUseHook(
+      kiroEvent("tokenjuice wrap -- cat notes#1.txt"),
+    );
     const outer = await runKiroPreToolUseHook(
       kiroEvent("tokenjuice wrap -- printf one && printf bypass"),
     );
+    const multilineOuter = await runKiroPreToolUseHook(
+      kiroEvent("tokenjuice wrap -- printf one\nprintf bypass"),
+    );
+    const misleadingQuote = await runKiroPreToolUseHook(
+      kiroEvent("tokenjuice wrap -- printf \"'\"\nprintf bypass # '"),
+    );
+    const commentQuote = await runKiroPreToolUseHook(
+      kiroEvent("tokenjuice wrap -- printf one # '\nprintf bypass\n# '"),
+    );
+    const ansiCQuote = await runKiroPreToolUseHook(
+      kiroEvent("tokenjuice wrap -- printf $'a\\\\''\nprintf bypass # '"),
+    );
 
     expect(inner).toBe(0);
+    expect(multilineInner).toBe(0);
+    expect(hashInWord).toBe(0);
     expect(outer).toBe(2);
+    expect(multilineOuter).toBe(2);
+    expect(misleadingQuote).toBe(2);
+    expect(commentQuote).toBe(2);
+    expect(ansiCQuote).toBe(2);
     expect(stderr).toHaveBeenCalledWith(expect.stringContaining("Retry exactly as"));
   });
 

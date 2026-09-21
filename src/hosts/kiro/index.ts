@@ -193,22 +193,29 @@ function findTokenjuiceKiroHook(config: KiroAgentConfig): KiroAgentHook | undefi
 }
 
 function containsUnsafeOuterShellSyntax(command: string, platform: NodeJS.Platform = process.platform): boolean {
-  if (command.includes("\n") || command.includes("\r")) {
+  const hasLineBreak = command.includes("\n") || command.includes("\r");
+  if (hasLineBreak && (platform === "win32" || command.includes("$'") || command.includes("$\""))) {
     return true;
   }
 
   let quote: "'" | "\"" | null = null;
   let escaping = false;
+  let wordStarted = false;
   for (let index = 0; index < command.length; index += 1) {
     const char = command[index]!;
     const next = command[index + 1];
 
+    if ((char === "\n" || char === "\r") && quote === null) {
+      return true;
+    }
     if (escaping) {
       escaping = false;
+      wordStarted = true;
       continue;
     }
     if (platform !== "win32" && quote !== "'" && char === "\\") {
       escaping = true;
+      wordStarted = true;
       continue;
     }
     if (quote === "'") {
@@ -217,19 +224,31 @@ function containsUnsafeOuterShellSyntax(command: string, platform: NodeJS.Platfo
       }
       continue;
     }
-    if (char === "'") {
+    if (char === "'" && quote !== "\"") {
       quote = "'";
+      wordStarted = true;
       continue;
     }
     if (char === "\"") {
       quote = quote === "\"" ? null : "\"";
+      wordStarted = true;
       continue;
     }
     if (char === "`" || (char === "$" && next === "(")) {
       return true;
     }
+    if (quote === null && /\s/u.test(char)) {
+      wordStarted = false;
+      continue;
+    }
+    if (quote === null && char === "#" && !wordStarted) {
+      return true;
+    }
     if (quote === null && ";|&<>()".includes(char)) {
       return true;
+    }
+    if (quote === null) {
+      wordStarted = true;
     }
   }
 
