@@ -160,6 +160,10 @@
       {
         "logicalPatch": "fork-maintenance-assets-v1",
         "commit": "e10507f6c7bcea0b2c6d73ca3351c616994d0230"
+      },
+      {
+        "logicalPatch": "fork-maintenance-verification-input-v1",
+        "commit": "c8d55fc4f140604e10b30f27ff75fa6abb38976e"
       }
     ]
   },
@@ -211,7 +215,8 @@
       "codex-compaction-feedback-v1"
     ],
     "fork-maintenance-assets": [
-      "fork-maintenance-assets-v1"
+      "fork-maintenance-assets-v1",
+      "fork-maintenance-verification-input-v1"
     ]
   },
   "domains": [],
@@ -430,20 +435,29 @@
       "features": [
         "fork-maintenance-assets"
       ]
+    },
+    {
+      "logicalPatch": "fork-maintenance-verification-input-v1",
+      "commit": "c8d55fc4f140604e10b30f27ff75fa6abb38976e",
+      "sourceCommit": "c8d55fc4f140604e10b30f27ff75fa6abb38976e",
+      "features": [
+        "fork-maintenance-assets"
+      ]
     }
   ],
   "verification": {
-    "install": "pnpm install --frozen-lockfile",
+    "install": "npx --yes pnpm@10.11.0 install --frozen-lockfile",
     "source": [
-      "pnpm verify"
+      "env TMPDIR=<isolated-directory-outside-/tmp> npx --yes pnpm@10.11.0 verify"
     ],
     "package": [
-      "pnpm release:local"
+      "env TMPDIR=<isolated-directory-outside-/tmp> npx --yes pnpm@10.11.0 release:local"
     ],
     "reconstruction": "git diff --exit-code <intended-snapshot> <candidate> --"
   },
   "maintenanceAssets": [
-    "fork-maintenance-assets-v1"
+    "fork-maintenance-assets-v1",
+    "fork-maintenance-verification-input-v1"
   ],
-  "notes": "Structural migration on v0.8.1. Upgrade to the latest stable tag is intentionally a later train."
+  "notes": "Structural migration on v0.8.1, revision 2 after recording the required isolated TMPDIR verification input. Upgrade to the latest stable tag is intentionally a later train."
 }

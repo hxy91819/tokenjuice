@@ -395,11 +395,15 @@
       "reason": "Owns the project guidance and migration record required to reconstruct and maintain the fork.",
       "source": {
         "baseCommit": "49bdcf1755833ff1e02e44e6e7fe91c0fb44c16e",
-        "versionCommit": "e10507f6c7bcea0b2c6d73ca3351c616994d0230",
+        "versionCommit": "c8d55fc4f140604e10b30f27ff75fa6abb38976e",
         "commits": [
           {
             "commit": "e10507f6c7bcea0b2c6d73ca3351c616994d0230",
             "logicalPatch": "fork-maintenance-assets-v1"
+          },
+          {
+            "commit": "c8d55fc4f140604e10b30f27ff75fa6abb38976e",
+            "logicalPatch": "fork-maintenance-verification-input-v1"
           }
         ]
       },
@@ -412,8 +416,8 @@
   "domains": [],
   "trains": [
     {
-      "id": "v0.8.1-migration-r1",
-      "manifest": "config/local-aggregate-trains/v0.8.1-migration-r1.json"
+      "id": "v0.8.1-migration-r2",
+      "manifest": "config/local-aggregate-trains/v0.8.1-migration-r2.json"
     }
   ]
 }
