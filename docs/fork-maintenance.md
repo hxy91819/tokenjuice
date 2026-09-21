@@ -10,7 +10,7 @@ Use `$open-source-fork-maintenance` for source registration, upstream updates, t
 
 ## Verification and delivery
 
-Supported runtime and package manager versions come from `package.json` (`node >=20`, `pnpm@10.11.0`). Install with `pnpm install --frozen-lockfile`. The source gate is `pnpm verify`; the packaging gate is `pnpm release:local`. Run gates against the exact candidate in an isolated worktree and keep generated `dist/` and `release/` output out of source commits. The project has no service deployment step. npm, GitHub Release, and Homebrew publication remain governed by the existing release process and are not authorized merely by a maintenance migration.
+Supported runtime and package manager versions come from `package.json` (`node >=20`, `pnpm@10.11.0`). Use that exact pnpm version and install with `pnpm install --frozen-lockfile`. Run the source gate as `env TMPDIR=<isolated-directory-outside-/tmp> pnpm verify`: shared `/tmp` on the maintenance host contains unrelated Git metadata that invalidates project-boundary fixtures. The packaging gate is `pnpm release:local`. Run gates against the exact candidate in an isolated worktree and keep generated `dist/` and `release/` output out of source commits. The project has no service deployment step. npm, GitHub Release, and Homebrew publication remain governed by the existing release process and are not authorized merely by a maintenance migration.
 
 ## Migration baseline
 
