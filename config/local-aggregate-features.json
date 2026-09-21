@@ -411,13 +411,65 @@
       "integration": {
         "domain": null
       }
+    },
+    {
+      "id": "kiro-multiline-wrapper",
+      "branch": "fix/kiro-multiline-wrapper",
+      "lastPackaged": null,
+      "specIssue": null,
+      "upstreamFeedback": [],
+      "relatedIssues": [],
+      "disposition": "needs-feedback",
+      "reason": "Candidate autoreview found that the Kiro guard blocked legitimate quoted multiline shell payloads; no upstream report has been filed.",
+      "source": {
+        "baseCommit": "9a1ed34591c5ad6777f345458ef6eeed020f9fe5",
+        "versionCommit": "edd3e82620618e9acdf0a1d5dc46d5e48a9aff70",
+        "commits": [
+          {
+            "commit": "edd3e82620618e9acdf0a1d5dc46d5e48a9aff70",
+            "logicalPatch": "kiro-multiline-wrapper-v1"
+          }
+        ]
+      },
+      "dependsOn": [
+        "kiro-native-hook"
+      ],
+      "integration": {
+        "domain": null
+      }
+    },
+    {
+      "id": "codex-code-mode-e2e-exit",
+      "branch": "fix/code-mode-e2e-exit",
+      "lastPackaged": null,
+      "specIssue": null,
+      "upstreamFeedback": [],
+      "relatedIssues": [],
+      "disposition": "internal",
+      "reason": "Candidate autoreview found that the fork-only Code Mode regression script reported failures without a nonzero exit; this is verification maintenance.",
+      "source": {
+        "baseCommit": "9a1ed34591c5ad6777f345458ef6eeed020f9fe5",
+        "versionCommit": "faea886e1fab1002058ef65ca7800e7c53a35484",
+        "commits": [
+          {
+            "commit": "faea886e1fab1002058ef65ca7800e7c53a35484",
+            "logicalPatch": "codex-code-mode-e2e-exit-v1"
+          }
+        ]
+      },
+      "dependsOn": [
+        "codex-code-mode-output"
+      ],
+      "integration": {
+        "domain": null
+      }
     }
   ],
   "domains": [],
   "trains": [
     {
-      "id": "v0.8.1-migration-r2",
-      "manifest": "config/local-aggregate-trains/v0.8.1-migration-r2.json"
+      "id": "v0.8.1-migration-r3",
+      "manifest": "config/local-aggregate-trains/v0.8.1-migration-r3.json"
     }
   ]
 }

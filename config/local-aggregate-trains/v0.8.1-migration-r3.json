@@ -15,7 +15,9 @@
     "artifact-stats-fail-open",
     "test-environment-isolation",
     "codex-code-mode-output",
-    "fork-maintenance-assets"
+    "fork-maintenance-assets",
+    "kiro-multiline-wrapper",
+    "codex-code-mode-e2e-exit"
   ],
   "dependencies": {
     "codebuddy-session-activation": [],
@@ -35,7 +37,13 @@
     "codex-code-mode-output": [
       "codex-output-replacement"
     ],
-    "fork-maintenance-assets": []
+    "fork-maintenance-assets": [],
+    "kiro-multiline-wrapper": [
+      "kiro-native-hook"
+    ],
+    "codex-code-mode-e2e-exit": [
+      "codex-code-mode-output"
+    ]
   },
   "featureSources": {
     "codebuddy-session-activation": [
@@ -165,6 +173,18 @@
         "logicalPatch": "fork-maintenance-verification-input-v1",
         "commit": "c8d55fc4f140604e10b30f27ff75fa6abb38976e"
       }
+    ],
+    "kiro-multiline-wrapper": [
+      {
+        "logicalPatch": "kiro-multiline-wrapper-v1",
+        "commit": "edd3e82620618e9acdf0a1d5dc46d5e48a9aff70"
+      }
+    ],
+    "codex-code-mode-e2e-exit": [
+      {
+        "logicalPatch": "codex-code-mode-e2e-exit-v1",
+        "commit": "faea886e1fab1002058ef65ca7800e7c53a35484"
+      }
     ]
   },
   "featurePatches": {
@@ -217,6 +237,12 @@
     "fork-maintenance-assets": [
       "fork-maintenance-assets-v1",
       "fork-maintenance-verification-input-v1"
+    ],
+    "kiro-multiline-wrapper": [
+      "kiro-multiline-wrapper-v1"
+    ],
+    "codex-code-mode-e2e-exit": [
+      "codex-code-mode-e2e-exit-v1"
     ]
   },
   "domains": [],
@@ -233,7 +259,9 @@
     "artifact-stats-fail-open",
     "test-environment-isolation",
     "codex-code-mode-output",
-    "fork-maintenance-assets"
+    "fork-maintenance-assets",
+    "kiro-multiline-wrapper",
+    "codex-code-mode-e2e-exit"
   ],
   "patches": [
     {
@@ -443,6 +471,22 @@
       "features": [
         "fork-maintenance-assets"
       ]
+    },
+    {
+      "logicalPatch": "kiro-multiline-wrapper-v1",
+      "commit": "edd3e82620618e9acdf0a1d5dc46d5e48a9aff70",
+      "sourceCommit": "edd3e82620618e9acdf0a1d5dc46d5e48a9aff70",
+      "features": [
+        "kiro-multiline-wrapper"
+      ]
+    },
+    {
+      "logicalPatch": "codex-code-mode-e2e-exit-v1",
+      "commit": "faea886e1fab1002058ef65ca7800e7c53a35484",
+      "sourceCommit": "faea886e1fab1002058ef65ca7800e7c53a35484",
+      "features": [
+        "codex-code-mode-e2e-exit"
+      ]
     }
   ],
   "verification": {
@@ -459,5 +503,5 @@
     "fork-maintenance-assets-v1",
     "fork-maintenance-verification-input-v1"
   ],
-  "notes": "Structural migration on v0.8.1, revision 2 after recording the required isolated TMPDIR verification input. Upgrade to the latest stable tag is intentionally a later train."
+  "notes": "Structural migration on v0.8.1, revision 3 with separately owned fixes accepted from candidate autoreview. Upgrade to the latest stable tag is intentionally a later train."
 }
