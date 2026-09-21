@@ -1,0 +1,449 @@
+{
+  "baseline": {
+    "ref": "v0.8.1",
+    "commit": "49bdcf1755833ff1e02e44e6e7fe91c0fb44c16e"
+  },
+  "features": [
+    "codebuddy-session-activation",
+    "codex-hook-fail-open",
+    "codex-output-replacement",
+    "codex-raw-hint-authority",
+    "kiro-native-hook",
+    "fork-release-identity",
+    "codex-omission-policy",
+    "codex-runtime-hardening",
+    "artifact-stats-fail-open",
+    "test-environment-isolation",
+    "codex-code-mode-output",
+    "fork-maintenance-assets"
+  ],
+  "dependencies": {
+    "codebuddy-session-activation": [],
+    "codex-hook-fail-open": [],
+    "codex-output-replacement": [],
+    "codex-raw-hint-authority": [
+      "codex-output-replacement"
+    ],
+    "kiro-native-hook": [],
+    "fork-release-identity": [],
+    "codex-omission-policy": [
+      "codex-output-replacement"
+    ],
+    "codex-runtime-hardening": [],
+    "artifact-stats-fail-open": [],
+    "test-environment-isolation": [],
+    "codex-code-mode-output": [
+      "codex-output-replacement"
+    ],
+    "fork-maintenance-assets": []
+  },
+  "featureSources": {
+    "codebuddy-session-activation": [
+      {
+        "logicalPatch": "codebuddy-session-activation-v1",
+        "commit": "bef03d2a908a3712b6533e72a1727e03a5681838"
+      }
+    ],
+    "codex-hook-fail-open": [
+      {
+        "logicalPatch": "codex-hook-fail-open-v1",
+        "commit": "f05ac07dd48d38f2ddb321b415f757f7e9b96cfb"
+      },
+      {
+        "logicalPatch": "codex-hook-fail-open-e2e-v1",
+        "commit": "c7fff9642b3dc62d891b28d1b78f89e198535f7c"
+      }
+    ],
+    "codex-output-replacement": [
+      {
+        "logicalPatch": "codex-output-replacement-v1",
+        "commit": "8a465195e500948cd7be3bc4b7823a7625079e20"
+      },
+      {
+        "logicalPatch": "codex-output-live-regression-v1",
+        "commit": "fc5e0102de87392687d4da03e5278e3c6b0d27c8"
+      },
+      {
+        "logicalPatch": "codex-output-live-isolation-v1",
+        "commit": "87db5baa53ec0f88ba41a9a129da287060b6a14a"
+      },
+      {
+        "logicalPatch": "codex-output-replacement-explanation-v1",
+        "commit": "6b9456413c0c1eb2ed79f22fc31ffe3cfc545bfe"
+      },
+      {
+        "logicalPatch": "codex-output-replacement-status-v1",
+        "commit": "bfa85443b31ed84753086e02889c7875a61371f4"
+      }
+    ],
+    "codex-raw-hint-authority": [
+      {
+        "logicalPatch": "codex-raw-hint-authority-v1",
+        "commit": "0843a07f6f103da92e61bd2cbf0c0fb7846d2498"
+      }
+    ],
+    "kiro-native-hook": [
+      {
+        "logicalPatch": "kiro-native-hook-v1",
+        "commit": "6444c3878a15d96472eeee626b2485591dfd8b90"
+      }
+    ],
+    "fork-release-identity": [
+      {
+        "logicalPatch": "fork-release-identity-v1",
+        "commit": "62d62d28878e584d07fa136030c694169370bf93"
+      }
+    ],
+    "codex-omission-policy": [
+      {
+        "logicalPatch": "codex-omission-policy-persistence-v1",
+        "commit": "b3c464bbcbc47d21fc1e5e8bc182677a87d6a00f"
+      },
+      {
+        "logicalPatch": "codex-omission-policy-isolation-v1",
+        "commit": "6aa7cebae94ba0ae690bef73f3771b7b1edf3c08"
+      },
+      {
+        "logicalPatch": "codex-omission-policy-installed-v1",
+        "commit": "47b9b74daeb482e173b2af4c822698cb10c25554"
+      },
+      {
+        "logicalPatch": "codex-omission-policy-authority-v1",
+        "commit": "9666a79d9245ccf6b9a407705c83ddc40a8d5f2e"
+      },
+      {
+        "logicalPatch": "codex-omission-policy-explicit-override-v1",
+        "commit": "d40097ac4955402928ec7ae5f0e0efde7159fc76"
+      },
+      {
+        "logicalPatch": "codex-omission-policy-neutral-install-v1",
+        "commit": "a66e9a58e8c226cc7820025f1017354aae7402dc"
+      }
+    ],
+    "codex-runtime-hardening": [
+      {
+        "logicalPatch": "codex-node-runtime-pin-v1",
+        "commit": "55c8f6fbb87d0e2456eabbecaa70767151fb19ee"
+      },
+      {
+        "logicalPatch": "codex-node-runtime-path-tests-v1",
+        "commit": "8151fd0e81de91b98154d7090c8be6f32973f084"
+      }
+    ],
+    "artifact-stats-fail-open": [
+      {
+        "logicalPatch": "artifact-stats-fail-open-v1",
+        "commit": "c6879c4252644845fe3e961e24a54b00d1dfee25"
+      }
+    ],
+    "test-environment-isolation": [
+      {
+        "logicalPatch": "test-environment-isolation-v1",
+        "commit": "6dddbe4e323d41c54a944981444ff1263dfd552e"
+      }
+    ],
+    "codex-code-mode-output": [
+      {
+        "logicalPatch": "codex-code-mode-output-v1",
+        "commit": "9cddd079dba576f1b796ac6f72931db190daf2d8"
+      },
+      {
+        "logicalPatch": "codex-profile-acceptance-checklist-v1",
+        "commit": "8d53211a376145b46cb705d554cded5fca1d13d7"
+      },
+      {
+        "logicalPatch": "codex-compaction-feedback-v1",
+        "commit": "676b8d57b91b64bd8974974b7e39269ba35165f0"
+      }
+    ],
+    "fork-maintenance-assets": [
+      {
+        "logicalPatch": "fork-maintenance-assets-v1",
+        "commit": "e10507f6c7bcea0b2c6d73ca3351c616994d0230"
+      }
+    ]
+  },
+  "featurePatches": {
+    "codebuddy-session-activation": [
+      "codebuddy-session-activation-v1"
+    ],
+    "codex-hook-fail-open": [
+      "codex-hook-fail-open-v1",
+      "codex-hook-fail-open-e2e-v1"
+    ],
+    "codex-output-replacement": [
+      "codex-output-replacement-v1",
+      "codex-output-live-regression-v1",
+      "codex-output-live-isolation-v1",
+      "codex-output-replacement-explanation-v1",
+      "codex-output-replacement-status-v1"
+    ],
+    "codex-raw-hint-authority": [
+      "codex-raw-hint-authority-v1"
+    ],
+    "kiro-native-hook": [
+      "kiro-native-hook-v1"
+    ],
+    "fork-release-identity": [
+      "fork-release-identity-v1"
+    ],
+    "codex-omission-policy": [
+      "codex-omission-policy-persistence-v1",
+      "codex-omission-policy-isolation-v1",
+      "codex-omission-policy-installed-v1",
+      "codex-omission-policy-authority-v1",
+      "codex-omission-policy-explicit-override-v1",
+      "codex-omission-policy-neutral-install-v1"
+    ],
+    "codex-runtime-hardening": [
+      "codex-node-runtime-pin-v1",
+      "codex-node-runtime-path-tests-v1"
+    ],
+    "artifact-stats-fail-open": [
+      "artifact-stats-fail-open-v1"
+    ],
+    "test-environment-isolation": [
+      "test-environment-isolation-v1"
+    ],
+    "codex-code-mode-output": [
+      "codex-code-mode-output-v1",
+      "codex-profile-acceptance-checklist-v1",
+      "codex-compaction-feedback-v1"
+    ],
+    "fork-maintenance-assets": [
+      "fork-maintenance-assets-v1"
+    ]
+  },
+  "domains": [],
+  "domainFeatures": {},
+  "directFeatures": [
+    "codebuddy-session-activation",
+    "codex-hook-fail-open",
+    "codex-output-replacement",
+    "codex-raw-hint-authority",
+    "kiro-native-hook",
+    "fork-release-identity",
+    "codex-omission-policy",
+    "codex-runtime-hardening",
+    "artifact-stats-fail-open",
+    "test-environment-isolation",
+    "codex-code-mode-output",
+    "fork-maintenance-assets"
+  ],
+  "patches": [
+    {
+      "logicalPatch": "codebuddy-session-activation-v1",
+      "commit": "bef03d2a908a3712b6533e72a1727e03a5681838",
+      "sourceCommit": "bef03d2a908a3712b6533e72a1727e03a5681838",
+      "features": [
+        "codebuddy-session-activation"
+      ]
+    },
+    {
+      "logicalPatch": "codex-hook-fail-open-v1",
+      "commit": "f05ac07dd48d38f2ddb321b415f757f7e9b96cfb",
+      "sourceCommit": "f05ac07dd48d38f2ddb321b415f757f7e9b96cfb",
+      "features": [
+        "codex-hook-fail-open"
+      ]
+    },
+    {
+      "logicalPatch": "codex-hook-fail-open-e2e-v1",
+      "commit": "c7fff9642b3dc62d891b28d1b78f89e198535f7c",
+      "sourceCommit": "c7fff9642b3dc62d891b28d1b78f89e198535f7c",
+      "features": [
+        "codex-hook-fail-open"
+      ]
+    },
+    {
+      "logicalPatch": "codex-output-replacement-v1",
+      "commit": "8a465195e500948cd7be3bc4b7823a7625079e20",
+      "sourceCommit": "8a465195e500948cd7be3bc4b7823a7625079e20",
+      "features": [
+        "codex-output-replacement"
+      ]
+    },
+    {
+      "logicalPatch": "codex-output-live-regression-v1",
+      "commit": "fc5e0102de87392687d4da03e5278e3c6b0d27c8",
+      "sourceCommit": "fc5e0102de87392687d4da03e5278e3c6b0d27c8",
+      "features": [
+        "codex-output-replacement"
+      ]
+    },
+    {
+      "logicalPatch": "codex-output-live-isolation-v1",
+      "commit": "87db5baa53ec0f88ba41a9a129da287060b6a14a",
+      "sourceCommit": "87db5baa53ec0f88ba41a9a129da287060b6a14a",
+      "features": [
+        "codex-output-replacement"
+      ]
+    },
+    {
+      "logicalPatch": "codex-output-replacement-explanation-v1",
+      "commit": "6b9456413c0c1eb2ed79f22fc31ffe3cfc545bfe",
+      "sourceCommit": "6b9456413c0c1eb2ed79f22fc31ffe3cfc545bfe",
+      "features": [
+        "codex-output-replacement"
+      ]
+    },
+    {
+      "logicalPatch": "codex-output-replacement-status-v1",
+      "commit": "bfa85443b31ed84753086e02889c7875a61371f4",
+      "sourceCommit": "bfa85443b31ed84753086e02889c7875a61371f4",
+      "features": [
+        "codex-output-replacement"
+      ]
+    },
+    {
+      "logicalPatch": "codex-raw-hint-authority-v1",
+      "commit": "0843a07f6f103da92e61bd2cbf0c0fb7846d2498",
+      "sourceCommit": "0843a07f6f103da92e61bd2cbf0c0fb7846d2498",
+      "features": [
+        "codex-raw-hint-authority"
+      ]
+    },
+    {
+      "logicalPatch": "kiro-native-hook-v1",
+      "commit": "6444c3878a15d96472eeee626b2485591dfd8b90",
+      "sourceCommit": "6444c3878a15d96472eeee626b2485591dfd8b90",
+      "features": [
+        "kiro-native-hook"
+      ]
+    },
+    {
+      "logicalPatch": "fork-release-identity-v1",
+      "commit": "62d62d28878e584d07fa136030c694169370bf93",
+      "sourceCommit": "62d62d28878e584d07fa136030c694169370bf93",
+      "features": [
+        "fork-release-identity"
+      ]
+    },
+    {
+      "logicalPatch": "codex-omission-policy-persistence-v1",
+      "commit": "b3c464bbcbc47d21fc1e5e8bc182677a87d6a00f",
+      "sourceCommit": "b3c464bbcbc47d21fc1e5e8bc182677a87d6a00f",
+      "features": [
+        "codex-omission-policy"
+      ]
+    },
+    {
+      "logicalPatch": "codex-node-runtime-pin-v1",
+      "commit": "55c8f6fbb87d0e2456eabbecaa70767151fb19ee",
+      "sourceCommit": "55c8f6fbb87d0e2456eabbecaa70767151fb19ee",
+      "features": [
+        "codex-runtime-hardening"
+      ]
+    },
+    {
+      "logicalPatch": "artifact-stats-fail-open-v1",
+      "commit": "c6879c4252644845fe3e961e24a54b00d1dfee25",
+      "sourceCommit": "c6879c4252644845fe3e961e24a54b00d1dfee25",
+      "features": [
+        "artifact-stats-fail-open"
+      ]
+    },
+    {
+      "logicalPatch": "test-environment-isolation-v1",
+      "commit": "6dddbe4e323d41c54a944981444ff1263dfd552e",
+      "sourceCommit": "6dddbe4e323d41c54a944981444ff1263dfd552e",
+      "features": [
+        "test-environment-isolation"
+      ]
+    },
+    {
+      "logicalPatch": "codex-node-runtime-path-tests-v1",
+      "commit": "8151fd0e81de91b98154d7090c8be6f32973f084",
+      "sourceCommit": "8151fd0e81de91b98154d7090c8be6f32973f084",
+      "features": [
+        "codex-runtime-hardening"
+      ]
+    },
+    {
+      "logicalPatch": "codex-code-mode-output-v1",
+      "commit": "9cddd079dba576f1b796ac6f72931db190daf2d8",
+      "sourceCommit": "9cddd079dba576f1b796ac6f72931db190daf2d8",
+      "features": [
+        "codex-code-mode-output"
+      ]
+    },
+    {
+      "logicalPatch": "codex-profile-acceptance-checklist-v1",
+      "commit": "8d53211a376145b46cb705d554cded5fca1d13d7",
+      "sourceCommit": "8d53211a376145b46cb705d554cded5fca1d13d7",
+      "features": [
+        "codex-code-mode-output"
+      ]
+    },
+    {
+      "logicalPatch": "codex-compaction-feedback-v1",
+      "commit": "676b8d57b91b64bd8974974b7e39269ba35165f0",
+      "sourceCommit": "676b8d57b91b64bd8974974b7e39269ba35165f0",
+      "features": [
+        "codex-code-mode-output"
+      ]
+    },
+    {
+      "logicalPatch": "codex-omission-policy-isolation-v1",
+      "commit": "6aa7cebae94ba0ae690bef73f3771b7b1edf3c08",
+      "sourceCommit": "6aa7cebae94ba0ae690bef73f3771b7b1edf3c08",
+      "features": [
+        "codex-omission-policy"
+      ]
+    },
+    {
+      "logicalPatch": "codex-omission-policy-installed-v1",
+      "commit": "47b9b74daeb482e173b2af4c822698cb10c25554",
+      "sourceCommit": "47b9b74daeb482e173b2af4c822698cb10c25554",
+      "features": [
+        "codex-omission-policy"
+      ]
+    },
+    {
+      "logicalPatch": "codex-omission-policy-authority-v1",
+      "commit": "9666a79d9245ccf6b9a407705c83ddc40a8d5f2e",
+      "sourceCommit": "9666a79d9245ccf6b9a407705c83ddc40a8d5f2e",
+      "features": [
+        "codex-omission-policy"
+      ]
+    },
+    {
+      "logicalPatch": "codex-omission-policy-explicit-override-v1",
+      "commit": "d40097ac4955402928ec7ae5f0e0efde7159fc76",
+      "sourceCommit": "d40097ac4955402928ec7ae5f0e0efde7159fc76",
+      "features": [
+        "codex-omission-policy"
+      ]
+    },
+    {
+      "logicalPatch": "codex-omission-policy-neutral-install-v1",
+      "commit": "a66e9a58e8c226cc7820025f1017354aae7402dc",
+      "sourceCommit": "a66e9a58e8c226cc7820025f1017354aae7402dc",
+      "features": [
+        "codex-omission-policy"
+      ]
+    },
+    {
+      "logicalPatch": "fork-maintenance-assets-v1",
+      "commit": "e10507f6c7bcea0b2c6d73ca3351c616994d0230",
+      "sourceCommit": "e10507f6c7bcea0b2c6d73ca3351c616994d0230",
+      "features": [
+        "fork-maintenance-assets"
+      ]
+    }
+  ],
+  "verification": {
+    "install": "pnpm install --frozen-lockfile",
+    "source": [
+      "pnpm verify"
+    ],
+    "package": [
+      "pnpm release:local"
+    ],
+    "reconstruction": "git diff --exit-code <intended-snapshot> <candidate> --"
+  },
+  "maintenanceAssets": [
+    "fork-maintenance-assets-v1"
+  ],
+  "notes": "Structural migration on v0.8.1. Upgrade to the latest stable tag is intentionally a later train."
+}
